@@ -837,9 +837,21 @@ border-radius: 0.25rem; }
     right: 1.5rem;
     z-index: 100;
     display: flex;
+    flex-direction: column; /* Changed to column */
+    align-items: flex-end;   /* Align items to the right */
+    gap: 0.5rem;
+}
+
+#floating-home-btn-container {
+    /* This container just holds the home button */
+}
+
+.nav-cluster {
+    display: flex;
     align-items: flex-start;
     gap: 0.5rem;
 }
+
 #floating-nav-content {
     display: flex;
     flex-direction: column;
