@@ -1,0 +1,2979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K-Pop Photocard Collection</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Root Variables and Base Styles --- */
+        :root {
+            --velvet-black: #121212;
+            --card-width: 220px;
+            --card-height: 341px;
+            --color-redvelvet: #FF4757;
+            --color-iu: #50C878;
+            --color-aespa: #87CEEB;
+            --color-irene: #FF99AA;
+            --color-seulgi: #FFD400;
+            --color-wendy: #6495ED;
+            --color-joy: #00C853;
+            --color-yeri: #BA55D3;
+            --color-iu-member: #9370DB;
+            --color-karina: #5F9EA0;
+            --color-giselle: #FF69B4;
+            --color-winter: #ADD8E6;
+            --color-ningning: #C71585;
+            --default-ui-color: #777;
+            --floating-ui-color: var(--default-ui-color);
+            --fixed-carousel-radius: 400px;
+            --hero-glow-color: rgba(119, 119, 119, 0.5); /* Default glow color */
+        }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--velvet-black);
+            color: #f0f0f0;
+            overflow-x: hidden;
+        }
+        #user-view.scroll-snap {
+             scroll-snap-type: y mandatory;
+             height: 100vh;
+             overflow-y: scroll;
+        }
+        #user-view.tutorial-active {
+            filter: blur(5px);
+            transition: filter 0.3s ease;
+            pointer-events: none;
+        }
+        .font-display { font-family: 'Playfair Display', serif; }
+
+        /* --- Main Layout Sections --- */
+        .showcase-section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+            position: relative;
+            overflow: hidden;
+        }
+        .group-intro {
+            position: relative;
+            overflow: hidden;
+        }
+        .group-banner {
+            position: absolute; top: 0; left: 0; width: 100%; height: 40vh;
+            background-size: cover; background-position: center top;
+            z-index: 1; pointer-events: none;
+        }
+        .member-section {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            align-items: center;
+            width: 100%;
+            max-width: 1400px;
+            gap: 4rem;
+        }
+
+        /* --- Room Backdrop for Member Sections --- */
+        .member-section-container {
+            position: relative; /* Needed for absolute positioning of the backdrop */
+        }
+
+        .room-backdrop {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+            perspective: 2000px; /* Give it a deep perspective */
+            perspective-origin: center 60%; /* Lower the perspective origin slightly */
+        }
+
+        .room-backdrop::before,
+        .room-backdrop::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 50%; /* Each wall takes up half the container */
+            background-color: var(--member-color); /* Use member color as base */
+
+            /* The ornamental wallpaper pattern */
+            background-image:
+                /* Darkening overlay */
+                linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.95)),
+                /* Subtle vertical lines */
+                repeating-linear-gradient(
+                    90deg,
+                    hsla(0, 0%, 100%, 0.0) 0,
+                    hsla(0, 0%, 100%, 0.0) 100px,
+                    hsla(0, 0%, 100%, 0.02) 100px,
+                    hsla(0, 0%, 100%, 0.02) 101px
+                ),
+                /* Subtle ornamental pattern */
+                repeating-radial-gradient(
+                    circle at center,
+                    hsla(0, 0%, 100%, 0.01) 0,
+                    hsla(0, 0%, 100%, 0.01) 1px,
+                    transparent 1px,
+                    transparent 40px
+                );
+            background-size: cover, auto, 40px 40px;
+            opacity: 0.3; /* <-- ADJUSTED FOR MORE VISIBILITY */
+
+            /* Fade edges to blend into the darkness */
+            -webkit-mask-image: linear-gradient(to top, transparent 5%, black 25%, black 75%, transparent 95%);
+            mask-image: linear-gradient(to top, transparent 5%, black 25%, black 75%, transparent 95%);
+        }
+
+        /* Left Wall */
+        .room-backdrop::before {
+            left: 0;
+            transform-origin: right center;
+            transform: rotateY(55deg);
+        }
+
+        /* Right Wall */
+        .room-backdrop::after {
+            right: 0;
+            transform-origin: left center;
+            transform: rotateY(-55deg);
+        }
+
+
+        /* --- Typography and Text Styles --- */
+        .hero-title {
+            font-size: 4.5rem; font-weight: 700; color: white;
+            letter-spacing: -0.03em;
+            text-shadow: 0 0 30px var(--hero-glow-color);
+        }
+        .title-container {
+            position: relative; z-index: 2;
+        }
+        .hero-subtitle, .group-subtitle {
+            font-size: 1.25rem; margin: 1rem auto 0; color: #a0a0a0;
+            max-width: 600px; text-align: center;
+        }
+        .member-quote {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-weight: 400;
+            font-size: 1.1rem; /* Made quote smaller */
+            color: var(--member-color);
+            max-width: calc(50% - 4rem); /* Widened quote container */
+            text-align: left;
+            z-index: 5;
+            text-shadow: 0 1px 10px rgba(0,0,0,0.5);
+        }
+        /* New decorative quote mark */
+        .member-quote::before {
+            content: '“';
+            position: absolute;
+            z-index: -1;
+            font-family: 'Playfair Display', serif;
+            font-size: 8rem;
+            font-style: normal;
+            color: var(--member-color);
+            opacity: 0.1;
+            top: -1.5rem;
+            left: -1.5rem;
+        }
+
+
+        /* --- Card Details Panel (Left side of member section) --- */
+        .card-details-panel { text-align: left; z-index: 5; }
+        .card-details-panel .card-id-text { font-size: 1rem; color: #888; letter-spacing: 0.05em; }
+        .card-details-panel .member-name { font-size: 3.5rem; font-weight: 800; line-height: 1.1; color: var(--member-color); }
+        .card-details-panel .group-name { font-size: 1.5rem; font-weight: 500; color: var(--member-color); }
+        .card-details-panel .album-name { font-size: 1.1rem; color: #a0a0a0; margin-top: 1.5rem; }
+        .card-details-panel .version-name { font-size: 0.9rem; color: #888; min-height: 20px; }
+        .card-details-panel .price-tag { font-size: 2.5rem; font-weight: 900; margin-top: 1rem; color: var(--member-color); }
+        .original-price-container { font-size: 1.25rem; color: #888; margin-top: 0.25rem; min-height: 20px; }
+        .original-price { text-decoration: line-through; }
+        .add-to-basket-main-btn {
+            margin-top: 1.5rem; background-color: var(--member-color); color: white;
+            padding: 0.75rem 2rem; border-radius: 9999px; font-weight: 700;
+            display: inline-block; transition: all 0.2s ease;
+        }
+        .add-to-basket-main-btn.in-basket {
+            /* Background color is handled by JS now */
+        }
+        .add-to-basket-main-btn:hover { transform: scale(1.05); }
+        .add-to-basket-main-btn:disabled { background-color: #555; cursor: not-allowed; opacity: 0.7; }
+
+        /* --- Carousel --- */
+        .carousel-container { width: 100%; height: 460px; position: relative; perspective: 1500px; }
+        .carousel {
+            width: 100%;
+            height: 400px;
+            position: absolute;
+            top: 60px; 
+            transform-style: preserve-3d;
+            transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            cursor: grab;
+        }
+        .carousel.is-dragging { cursor: grabbing; }
+        .carousel-arrow {
+            position: absolute;
+            top: calc(60px + (400px / 2)); 
+            transform: translateY(-50%) translateX(-50%);
+            z-index: 10; width: 50px; height: 50px; border-radius: 50%;
+            background-color: var(--member-color); color: white;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease, left 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            box-shadow: 0 0 15px var(--member-color);
+        }
+        .carousel-arrow:hover { transform: translateY(-50%) translateX(-50%) scale(1.1); }
+        
+        /* --- Carousel Pagination --- */
+        .carousel-pagination {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            z-index: 10;
+            color: var(--member-color);
+        }
+        .page-btn {
+            background: none;
+            border: 2px solid var(--member-color);
+            color: var(--member-color);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .page-btn:hover {
+            background-color: var(--member-color);
+            color: white;
+        }
+        .page-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        .page-indicator {
+            font-weight: 600;
+        }
+
+        /* --- Carousel Cards --- */
+        .carousel-card {
+            position: absolute; left: 50%; top: 50%;
+            margin-left: calc(var(--card-width) / -2); margin-top: calc(var(--card-height) / -2);
+            width: var(--card-width); height: var(--card-height);
+            transform-style: preserve-3d; transform-origin: center center;
+        }
+        .carousel-card-inner {
+            width: 100%; height: 100%; position: relative;
+            transform-style: preserve-3d;
+            transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)) rotateY(var(--flip-y-rotation, 0deg));
+            transition: transform 0.6s ease-out; transform-origin: center center;
+        }
+        .carousel-card.is-flipped .carousel-card-inner { --flip-y-rotation: 180deg; }
+        .carousel-card-face {
+            position: absolute; width: 100%; height: 100%;
+            backface-visibility: hidden; border-radius: 1rem; overflow: hidden;
+            background-color: #2a2a2a; border: 2px solid var(--member-color);
+            transition: border-color 0.5s, box-shadow 0.5s;
+            transform-origin: center center;
+        }
+        .carousel-card-face {
+             -webkit-box-reflect: below 10px linear-gradient(transparent, transparent, rgba(0,0,0,0.2));
+        }
+        .carousel-card.is-active .carousel-card-front { box-shadow: 0 0 35px -8px var(--member-color); }
+        .carousel-card-face img { width: 100%; height: 100%; object-fit: cover; }
+        .carousel-card-back { transform: rotateY(180deg); }
+
+        /* --- Card Sheen Effect (Using HTML Element) --- */
+        .card-sheen-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                45deg,
+                transparent 40%,
+                rgba(255, 255, 255, 0.3) 50%, /* Sheen color, slightly more opaque */
+                transparent 60%
+            );
+            background-size: 200% 200%; /* Make the gradient larger than the element */
+            background-position: -100% -100%; /* Start off-screen top-left */
+            animation: cardSheen 2.5s infinite linear; /* Adjust duration */
+            pointer-events: none; /* Ensure clicks pass through */
+            mix-blend-mode: screen; /* Blends nicely with card image */
+            border-radius: 1rem; /* Match card border-radius */
+            
+            /* Aggressive hiding: start invisible and scaled to zero */
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(0); 
+            transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease; /* Animate scale as well */
+        }
+
+        /* When has-sheen is applied AND the card is NOT flipped, make it visible and opaque */
+        .carousel-card:not(.is-flipped) .carousel-card-front .card-sheen-overlay.is-sheen-active {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1); /* Scale back to normal size */
+        }
+
+        @keyframes cardSheen {
+            0% {
+                background-position: -100% -100%; /* Start top-left */
+            }
+            100% {
+                background-position: 100% 100%; /* End bottom-right */
+            }
+        }
+
+        /* --- Sparkle/Particle Effect --- */
+        .sparkle-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden; /* Ensure particles don't spill outside card */
+            border-radius: 1rem;
+            opacity: 0; /* Hidden by default */
+            transition: opacity 0.3s ease-out; /* Smoother fade in/out */
+        }
+
+        .carousel-card.is-active .sparkle-container.has-sparkle {
+            opacity: 1;
+            /* Overall animation duration for the container, controlling when particles are visible */
+            animation: sparkle-container-fade 1.0s ease-out forwards;
+        }
+
+        @keyframes sparkle-container-fade {
+            0% { opacity: 0; }
+            10% { opacity: 1; } /* Quick burst of visibility */
+            90% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        .sparkle {
+            position: absolute;
+            background-color: var(--sparkle-color, white); /* Sparkle color, defaults to white */
+            border-radius: 50%; /* Still round, but small and glowing makes it sparkle-like */
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0); /* Start from center, very small */
+            animation: sparkle-burst 0.8s ease-out forwards; /* Faster, more impactful animation */
+            box-shadow: 0 0 4px 1px var(--sparkle-color-shadow-1, rgba(255,255,255,0.7)), 0 0 8px 2px var(--sparkle-color-shadow-2, rgba(255,255,255,0.4)); /* Stronger, layered glow */
+        }
+
+        @keyframes sparkle-burst {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0);
+            }
+            20% { /* Quick pop to full size and opacity */
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--sparkle-end-x), var(--sparkle-end-y)) scale(0); /* Burst outwards */
+            }
+        }
+
+
+        /* --- Card Overlays and Indicators --- */
+        .card-id-overlay {
+            position: absolute; top: 0.75rem; left: 0.75rem; z-index: 6;
+            background-color: rgba(0,0,0,0.6); color: #ccc;
+            padding: 2px 6px; border-radius: 8px;
+            font-size: 0.7rem; font-weight: bold;
+        }
+        .card-flip-overlay {
+            position: absolute; top:0; left:0; width:100%; height: 15%; z-index: 7; cursor: pointer;
+            background-color: rgba(0,0,0,0.5); opacity: 0;
+            display: flex; align-items: center; justify-content: center;
+            transition: opacity 0.3s ease;
+        }
+        .carousel-card-face:hover .card-flip-overlay { opacity: 1; }
+        .card-click-overlay { /* For front face only */
+            position: absolute; top:15%; left:0; width:100%; height:85%; z-index: 5; cursor: pointer;
+        }
+        .card-status-overlay-back { /* New class for back face overlay */
+            position: absolute; top:15%; left:0; width:100%; height:85%; z-index: 5; cursor: default;
+        }
+        .card-added-indicator {
+            position: absolute; bottom: 1rem; right: 1rem; z-index: 6;
+            width: 32px; height: 32px; border-radius: 50%;
+            background-color: rgba(0,0,0,0.6); color: var(--member-color);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.25rem; transform: scale(0);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        .carousel-card.in-basket .card-added-indicator { transform: scale(1); }
+        .card-tags {
+            position: absolute; bottom: 1rem; left: 1rem; z-index: 6;
+            display: flex; flex-direction: column; gap: 0.5rem;
+            align-items: flex-start; opacity: 0; transition: opacity 0.3s ease;
+        }
+        .carousel-card.show-tags .card-tags { opacity: 1; }
+        .tag {
+            background: linear-gradient(90deg, rgba(0,0,0,0.8), rgba(0,0,0,0.6));
+            backdrop-filter: blur(5px); color: white; padding: 0.25rem 0.75rem;
+            border-radius: 9999px; font-size: 0.75rem; font-weight: 600;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .card-status-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); display: none;
+            align-items: center; justify-content: center; color: white;
+            font-size: 2rem; font-weight: bold; border-radius: 1rem;
+            z-index: 8; pointer-events: none; backdrop-filter: blur(3px);
+            text-shadow: 0 0 10px black;
+        }
+        .carousel-card.reserved .card-status-overlay,
+        .carousel-card.sold .card-status-overlay {
+            display: flex;
+            animation: glitch-effect 0.5s infinite alternate; /* Apply glitch effect */
+        }
+
+        /* --- Glitch Effect for Status Overlay --- */
+        @keyframes glitch-effect {
+            0% {
+                transform: translate(0, 0);
+                filter: brightness(1);
+            }
+            20% {
+                transform: translate(-1px, 1px);
+                filter: brightness(1.1);
+            }
+            40% {
+                transform: translate(1px, -1px);
+                filter: brightness(0.9);
+            }
+            60% {
+                transform: translate(-1px, 1px);
+                filter: brightness(1.1);
+            }
+            80% {
+                transform: translate(1px, -1px);
+                filter: brightness(0.9);
+            }
+            100% {
+                transform: translate(0, 0);
+                filter: brightness(1);
+            }
+        }
+
+        /* --- Floating UI Elements --- */
+        .floating-ui-container { position: fixed; bottom: 1.5rem; right: 1.5rem; display: flex; flex-direction: column; gap: 1rem; z-index: 100; }
+        .floating-basket {
+            position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 600px; background-color: rgba(30, 30, 30, 0.9);
+            backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 1rem; padding: 1rem 1.5rem; display: flex;
+            justify-content: space-between; align-items: center;
+            box-shadow: 0 -5px 30px rgba(0,0,0,0.3);
+            transition: bottom 0.5s cubic-bezier(0.23, 1, 0.32, 1), background-color 0.5s ease;
+        }
+        .floating-basket.visible { bottom: 1.5rem; }
+        .checkout-btn {
+            background-color: var(--floating-ui-color); color: white;
+            border-radius: 9999px;
+            transition: background-color 0.5s ease;
+        }
+        .empty-basket-btn {
+            color: white;
+            border-radius: 9999px;
+            transition: background-color 0.5s ease, filter 0.2s ease;
+        }
+        .empty-basket-btn:hover {
+            filter: brightness(1.15);
+        }
+        .floating-bubble {
+            width: 50px; height: 50px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            background-color: var(--floating-ui-color); color: white;
+            cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: background-color 0.5s ease, transform 0.2s ease;
+        }
+        .floating-bubble:hover { transform: scale(1.1); }
+
+        /* --- Modals --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
+            z-index: 200; display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+        }
+        .modal-overlay.visible { opacity: 1; pointer-events: auto; }
+        .modal-content-box {
+            background-color: #1e1e1e; border-radius: 1rem;
+            width: 90%; max-width: 500px; max-height: 85vh;
+            display: flex; flex-direction: column;
+            transform: scale(0.95); transition: transform 0.3s ease;
+        }
+        .modal-overlay.visible .modal-content-box { transform: scale(1); }
+        .modal-header { padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .modal-body { padding: 1.5rem; overflow-y: auto; }
+        .basket-item { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+        .basket-item-img { width: 60px; height: 93px; object-fit: cover; border-radius: 0.5rem; flex-shrink: 0; }
+        .basket-item-info { flex-grow: 1; }
+        .remove-item-btn { background: none; border: none; color: #888; font-size: 1.5rem; cursor: pointer; transition: color 0.2s; }
+        .remove-item-btn:hover { color: #ff4757; }
+        .info-modal-content h3 { font-size: 1.25rem; font-weight: bold; margin-top: 1rem; margin-bottom: 0.5rem; color: var(--floating-ui-color); }
+        .info-modal-content ul { list-style-position: inside; }
+
+        /* --- Forms --- */
+        .form-group { margin-bottom: 0.75rem; }
+        .form-group label { display: block; margin-bottom: 0.25rem; font-size: 0.9rem; color: #a0a0a0; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; background-color: #333; border: 1px solid #555;
+            border-radius: 0.5rem; padding: 0.5rem; color: white;
+        }
+        #generated-message { width: 100%; height: 150px; resize: vertical; }
+
+        /* --- Admin View --- */
+        #admin-view { display: none; padding: 2rem; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;}
+        .admin-controls { display: flex; gap: 1rem; flex-wrap: wrap;}
+        .admin-filters-sort-search { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem; align-items: flex-end; }
+        .admin-filters-sort-search .form-group { margin-bottom: 0; flex: 1 1 auto; min-width: 150px; }
+        .admin-bulk-actions { display: flex; gap: 0.5rem; background-color: #2a2a2a; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; justify-content: center; }
+        .admin-bulk-actions button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .admin-card-list { display: flex; flex-direction: column; gap: 1rem; }
+        .admin-card-item {
+            display: grid; grid-template-columns: auto 50px 1fr auto;
+            align-items: center; gap: 1rem; background-color: #2a2a2a;
+            padding: 1rem; border-radius: 0.5rem;
+            transition: opacity 0.3s ease, background-color 0.3s ease;
+            cursor: pointer;
+        }
+        .admin-card-item.selected { background-color: #4a4a4a; }
+        .admin-card-item.sold-card, .admin-card-item.archived-card { opacity: 0.5; filter: grayscale(80%); }
+        .admin-card-item.reserved-card { opacity: 0.7; filter: grayscale(40%); }
+        .admin-card-item input[type="checkbox"] { width: 20px; height: 20px; flex-shrink: 0; }
+        .admin-card-item img { width: 50px; height: 77px; object-fit: cover; border-radius: 0.25rem; flex-shrink: 0; }
+        .admin-card-info {
+            flex-grow: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.5rem; pointer-events: none; align-items: start;
+        }
+        .admin-card-info span { word-break: break-word; }
+        .admin-card-actions { display: flex; flex-direction: column; gap: 0.5rem; pointer-events: none; align-items: flex-end; }
+        .admin-card-actions button { background: #444; padding: 0.5rem; border-radius: 0.25rem; pointer-events: all; min-width: 70px; text-align: center; }
+
+        /* --- Utility & Message Box --- */
+        .message-box {
+            position: fixed; top: 1.5rem; left: 50%; transform: translateX(-50%);
+            background-color: #333; color: white; padding: 1rem 1.5rem;
+            border-radius: 0.5rem; z-index: 1000; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            opacity: 0; transition: opacity 0.3s, top 0.3s;
+        }
+        .message-box.visible { opacity: 1; top: 2.5rem; }
+        .message-box.error { background-color: #c0392b; }
+        .message-box.success { background-color: #27ae60; }
+
+        /* --- Skeleton Loaders --- */
+        .skeleton {
+            background-color: #2a2a2a;
+            position: relative;
+            overflow: hidden;
+        }
+        .skeleton::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -150%;
+            width: 150%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+            animation: shimmer 1.5s infinite;
+        }
+        @keyframes shimmer {
+            100% { left: 150%; }
+        }
+        .skeleton-text { height: 1em; border-radius: 0.25rem; }
+        .skeleton-card { width: var(--card-width); height: var(--card-height); border-radius: 1rem; }
+
+        /* --- Added to Basket Animation --- */
+        .flying-card {
+            position: fixed;
+            z-index: 1001;
+            width: 60px;
+            height: 93px;
+            border-radius: 0.5rem;
+            transition: all 0.7s cubic-bezier(0.5, 0, 1, 0.5);
+            pointer-events: none;
+        }
+
+        /* --- Perspective Tiles --- */
+        .perspective-container {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            perspective: 1000px;
+            z-index: 0;
+        }
+        .tile-grid {
+            position: absolute;
+            width: 100%;
+            max-width: 1200px; /* Constrains the grid to be a 'plate' */
+            height: 150%; /* Increases perceived depth */
+            left: 50%;
+            transform-style: preserve-3d;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 50px 50px; /* Denser grid for a more detailed look */
+            /* Creates soft edges for the 'plate' effect */
+            -webkit-mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+            mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+        }
+        .floor {
+            bottom: 27.5%; /* Adjusted to make floor take up 22.5% of screen */
+            transform: translateX(-50%) rotateX(86deg);
+        }
+        .ceiling {
+            top: 27.5%; /* Adjusted to make ceiling take up 22.5% of screen */
+            transform: translateX(-50%) rotateX(-86deg);
+        }
+        .tile-grid::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent);
+            animation: sweep 5s linear infinite;
+        }
+        @keyframes sweep {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* --- Scroll Down Arrow --- */
+        .scroll-down-arrow {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            width: 24px;
+            height: 24px;
+            color: var(--default-ui-color);
+            opacity: 0.5;
+            animation: bounce 2s infinite;
+            transition: opacity 0.3s ease, bottom 0.5s cubic-bezier(0.23, 1, 0.32, 1), color 0.5s ease;
+        }
+        .scroll-down-arrow:hover {
+            opacity: 1;
+        }
+        .scroll-down-arrow.raised {
+            bottom: 110px; /* New position when basket is visible */
+        }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0) translateX(-50%); }
+            40% { transform: translateY(-10px) translateX(-50%); }
+            60% { transform: translateY(-5px) translateX(-50%); }
+        }
+
+        /* --- Member Signature & Group Logo --- */
+        .member-signature {
+            position: absolute;
+            bottom: 2rem;
+            left: 2rem;
+            width: 150px;
+            height: 100px;
+            opacity: 1;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+            /* Masking properties to color the signature */
+            -webkit-mask-size: contain;
+            mask-size: contain;
+            -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
+            -webkit-mask-position: center;
+            mask-position: center;
+        }
+        .group-logo {
+            position: absolute;
+            bottom: 2rem;
+            left: 2rem;
+            width: 150px;
+            height: 100px;
+            object-fit: contain; /* Ensures logo scales correctly */
+            opacity: 1;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        
+        /* --- MODIFIED: Floating Navigation --- */
+        #floating-nav-container {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            z-index: 100;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+        #floating-nav-content {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.5rem;
+            transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out;
+        }
+        #floating-nav-content.is-hidden {
+            transform: translateX(calc(100% + 50px));
+            opacity: 0;
+            pointer-events: none;
+        }
+        .nav-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            justify-content: flex-end;
+        }
+        .nav-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            text-decoration: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            transition: transform 0.2s ease;
+            flex-shrink: 0;
+        }
+        .nav-btn:hover {
+            transform: scale(1.1);
+        }
+        #nav-toggle-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            background-color: rgba(42, 42, 42, 0.7);
+            backdrop-filter: blur(5px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            transition: transform 0.2s ease;
+            flex-shrink: 0;
+            cursor: pointer;
+            border: none;
+        }
+         #nav-toggle-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        /* --- Staggered Animation --- */
+        .animate-in {
+            opacity: 0;
+            transform: translateY(15px);
+            transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+        }
+        .showcase-section.is-visible .animate-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- Filter Sidebar --- */
+        #filter-sidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 320px;
+            height: 100%;
+            background-color: rgba(30, 30, 30, 0.9);
+            backdrop-filter: blur(10px);
+            border-left: 1px solid rgba(255,255,255,0.1);
+            z-index: 150;
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), background-color 0.5s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        #filter-sidebar.visible {
+            transform: translateX(0);
+        }
+        .filter-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid; /* color set by JS */
+            border-color: var(--floating-ui-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            transition: border-color 0.5s ease;
+        }
+        .filter-header h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--floating-ui-color);
+            transition: color 0.5s ease;
+        }
+        .filter-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .filter-body-content {
+            flex-grow: 1;
+        }
+        .filter-tag-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .filter-tag {
+            background-color: #444;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .filter-tag.active {
+            background-color: var(--floating-ui-color);
+            border-color: var(--floating-ui-color);
+            color: white;
+            box-shadow: 0 0 10px var(--floating-ui-color);
+        }
+
+        /* --- Tutorial Styles --- */
+        #tutorial-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 9998; /* Below the bubble and clone */
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        #tutorial-overlay.visible {
+            opacity: 1;
+            /* pointer-events are on the bubble and clone */
+        }
+        .tutorial-bubble {
+            position: fixed;
+            background-color: #2a2a2a;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            max-width: 300px;
+            z-index: 9999;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+            border: 1px solid #555;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+            pointer-events: auto;
+        }
+        .tutorial-bubble.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        .tutorial-bubble-content {
+            margin-bottom: 1rem;
+        }
+        .tutorial-bubble-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+        .tutorial-bubble-pointer {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-style: solid;
+        }
+        .tutorial-bubble-pointer.left { /* points left, attached to left side of bubble */
+            border-width: 10px 15px 10px 0;
+            border-color: transparent #2a2a2a transparent transparent;
+            top: 50%;
+            left: -15px;
+            transform: translateY(-50%);
+        }
+        .tutorial-bubble-pointer.right { /* points right, attached to right side of bubble */
+            border-width: 10px 0 10px 15px;
+            border-color: transparent transparent transparent #2a2a2a;
+            top: 50%;
+            right: -15px;
+            transform: translateY(-50%);
+        }
+        .tutorial-bubble-pointer.top { /* points up, attached to top of bubble */
+            border-width: 0 10px 15px 10px;
+            border-color: transparent transparent #2a2a2a transparent;
+            left: 50%;
+            top: -15px;
+            transform: translateX(-50%);
+        }
+        .tutorial-bubble-pointer.bottom { /* points down, attached to bottom of bubble */
+            border-width: 15px 10px 0 10px;
+            border-color: #2a2a2a transparent transparent transparent;
+            left: 50%;
+            bottom: -15px;
+            transform: translateX(-50%);
+        }
+        #tutorial-clone-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+        #tutorial-clone-container > * {
+            pointer-events: none;
+            position: absolute;
+        }
+
+
+        /* --- Responsive Design --- */
+        @media (max-width: 1024px) {
+            .member-section { grid-template-columns: 1fr; gap: 3rem; }
+            .card-details-panel { text-align: center; }
+            .member-quote {
+                position: absolute; /* Keep it absolute on mobile */
+                text-align: center;
+                max-width: 80%;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+            .admin-card-item { grid-template-columns: auto 50px 1fr; grid-template-rows: auto auto; }
+            .admin-card-info { grid-column: 3 / -1; }
+            .admin-card-actions { grid-column: 1 / -1; flex-direction: row; justify-content: center; margin-top: 0.5rem; }
+        }
+        @media (max-width: 768px) {
+            .hero-title { font-size: 3rem; }
+            .hero-subtitle { font-size: 1rem; }
+            .admin-card-info { grid-template-columns: repeat(1, 1fr); }
+            .admin-header { flex-direction: column; align-items: flex-start; }
+            .admin-controls { width: 100%; justify-content: space-between; }
+            .admin-filters-sort-search { flex-direction: column; align-items: stretch; }
+            .admin-filters-sort-search .form-group { min-width: unset; }
+            #filter-sidebar { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="user-view" class="scroll-snap">
+        <header id="main-section" class="showcase-section text-center" data-color="var(--default-ui-color)">
+            <div class="perspective-container">
+                <div class="tile-grid floor"></div>
+                <div class="tile-grid ceiling"></div>
+            </div>
+            <div class="title-container">
+                <h1 id="site-title" class="hero-title font-display animate-in">Loading Collection...</h1>
+                <p id="site-subtitle" class="hero-subtitle animate-in" style="transition-delay: 0.1s;"></p>
+            </div>
+            <div id="header-scroll-arrow" class="scroll-down-arrow">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3" /></svg>
+            </div>
+        </header>
+        <main id="collection-container"></main>
+        
+        <div id="floating-nav-container">
+            <div id="floating-nav-content">
+                </div>
+            <button id="nav-toggle-btn">
+                </button>
+        </div>
+
+        <div id="floating-basket" class="floating-basket">
+            <div id="basket-info"></div>
+            <div class="flex items-center gap-2">
+                <button data-action="empty-basket" id="floating-empty-btn" class="empty-basket-btn py-2 px-5 rounded-full font-semibold hidden">Empty Basket</button>
+                <button id="checkout-btn" class="checkout-btn py-2 px-5 font-semibold">View Basket</button>
+            </div>
+        </div>
+        <div class="floating-ui-container">
+            <div id="filter-bubble" class="floating-bubble" title="Filter & Search">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+            </div>
+            <div id="admin-panel-bubble" class="floating-bubble" title="Admin Panel">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            </div>
+            <div id="info-bubble" class="floating-bubble" title="Info">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            </div>
+        </div>
+    </div>
+
+    <div id="admin-view"></div>
+
+    <aside id="filter-sidebar">
+        <div class="filter-header">
+            <h3>Filter Cards</h3>
+            <button id="close-filter-btn" class="text-2xl text-white">&times;</button>
+        </div>
+        <div class="filter-body">
+            <div class="filter-body-content">
+                <div class="form-group">
+                    <label for="filter-search">Search</label>
+                    <input type="text" id="filter-search" name="searchTerm" placeholder="e.g., RBB, POB, etc.">
+                </div>
+                <div class="form-group">
+                    <label for="filter-album">Album</label>
+                    <select id="filter-album" name="album"><option value="All">All Albums</option></select>
+                </div>
+                <div class="form-group">
+                    <label for="filter-version">Version</label>
+                    <select id="filter-version" name="version"><option value="All">All Versions</option></select>
+                </div>
+                <div class="form-group">
+                    <label>Tags</label>
+                    <div class="filter-tag-group" id="filter-tags">
+                        <div class="filter-tag" data-tag="new">New</div>
+                        <div class="filter-tag" data-tag="rare">Rare</div>
+                        <div class="filter-tag" data-tag="sale">Sale</div>
+                        <div class="filter-tag" data-tag="super-sale">Super Sale</div>
+                    </div>
+                </div>
+            </div>
+            <button data-action="reset-filters" class="w-full bg-gray-600 text-white py-2 px-4 rounded-full mt-4">Reset Filters</button>
+        </div>
+    </aside>
+
+    <div id="tutorial-overlay">
+        <div id="tutorial-clone-container"></div>
+        <div id="tutorial-bubble" class="tutorial-bubble">
+            <div class="tutorial-bubble-pointer"></div>
+            <div id="tutorial-bubble-content" class="tutorial-bubble-content"></div>
+            <div class="tutorial-bubble-actions">
+                <button id="tutorial-close-btn" class="bg-gray-600 text-white py-1 px-3 rounded-full text-sm">Close</button>
+                <button id="tutorial-next-btn" class="bg-blue-600 text-white py-1 px-3 rounded-full text-sm">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="basket-modal-overlay" class="modal-overlay"></div>
+    <div id="info-modal-overlay" class="modal-overlay"></div>
+    <div id="admin-form-modal-overlay" class="modal-overlay"></div>
+    <div id="image-preview-modal-overlay" class="modal-overlay"></div>
+    <div id="content-editor-modal-overlay" class="modal-overlay"></div>
+    <div id="confirmation-modal-overlay" class="modal-overlay"></div>
+    <div id="login-modal-overlay" class="modal-overlay"></div>
+    <div id="disclaimer-modal-overlay" class="modal-overlay"></div>
+
+    <script type="module">
+        // Firebase Imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        /**
+         * =================================================================
+         * K-POP PHOTOCARD GALLERY - REFACTORED APPLICATION
+         * =================================================================
+         */
+        ((window) => {
+
+            // --- 1. CONFIGURATION ---
+            const config = {
+                firebase: {
+                    apiKey: "AIzaSyB3Ol6D8JcH_knurzbmV5zBljCFWhj95fY",
+                    authDomain: "k-pop-pricelist-phone-vers.firebaseapp.com",
+                    projectId: "k-pop-pricelist-phone-vers",
+                    storageBucket: "k-pop-pricelist-phone-vers.firebasestorage.app",
+                    messagingSenderId: "507855648935",
+                    appId: "1:507855648935:web:b367bc772b285d5f1c4382"
+                },
+                colors: {
+                    'Red Velvet': { group: 'var(--color-redvelvet)', Irene: 'var(--color-irene)', Seulgi: 'var(--color-seulgi)', Wendy: 'var(--color-wendy)', Joy: 'var(--color-joy)', Yeri: 'var(--color-yeri)' },
+                    'IU': { group: 'var(--color-iu)', IU: 'var(--color-iu-member)' },
+                    'aespa': { group: 'var(--color-aespa)', Karina: 'var(--color-karina)', Giselle: 'var(--color-giselle)', Winter: 'var(--color-winter)', Ningning: 'var(--color-ningning)' }
+                },
+                glowColors: {
+                    'Red Velvet': '255, 71, 87',
+                    'IU': '147, 112, 219',
+                    'aespa': '186, 85, 211'
+                },
+                groupPrefixes: { 'Red Velvet': 'RV', 'IU': 'I', 'aespa': 'ae' },
+                memberPrefixes: { 'IU': 'U' }
+            };
+
+            // --- 2. APPLICATION STATE ---
+            const state = {
+                cards: [],
+                basket: [],
+                siteContent: { title: "Loading...", subtitle: "", groupSubtitles: {}, groupBanners: {}, infoText: "", disclaimerText: "", memberQuotes: {} },
+                metadata: { groupOrder: [], memberOrder: {}, albums: {}, memberSignatures: {}, groupLogos: {} },
+                user: null,
+                isAdminView: false,
+                adminFilters: { group: 'All', member: 'All', status: 'All', searchTerm: '' },
+                adminSort: { by: 'default', order: 'asc' },
+                adminSelectedIds: new Set(),
+                isDataReady: { cards: false, content: false, metadata: false },
+                carouselPages: {},
+                userFilters: {},
+                activeMemberSectionId: null,
+            };
+
+            // --- 3. DOM ELEMENT CACHE ---
+            const dom = {
+                userView: document.getElementById('user-view'),
+                adminView: document.getElementById('admin-view'),
+                collectionContainer: document.getElementById('collection-container'),
+                siteTitle: document.getElementById('site-title'),
+                siteSubtitle: document.getElementById('site-subtitle'),
+                headerScrollArrow: document.getElementById('header-scroll-arrow'),
+                floatingBasket: document.getElementById('floating-basket'),
+                floatingEmptyBtn: document.getElementById('floating-empty-btn'),
+                basketInfo: document.getElementById('basket-info'),
+                floatingNavContainer: document.getElementById('floating-nav-container'),
+                floatingNavContent: document.getElementById('floating-nav-content'),
+                navToggleBtn: document.getElementById('nav-toggle-btn'),
+                filterSidebar: document.getElementById('filter-sidebar'),
+                filterBubble: document.getElementById('filter-bubble'),
+                closeFilterBtn: document.getElementById('close-filter-btn'),
+                filterForm: {
+                    search: document.getElementById('filter-search'),
+                    album: document.getElementById('filter-album'),
+                    version: document.getElementById('filter-version'),
+                    tags: document.getElementById('filter-tags'),
+                },
+                tutorialOverlay: document.getElementById('tutorial-overlay'),
+                tutorialBubble: document.getElementById('tutorial-bubble'),
+                tutorialContent: document.getElementById('tutorial-bubble-content'),
+                tutorialNextBtn: document.getElementById('tutorial-next-btn'),
+                tutorialCloseBtn: document.getElementById('tutorial-close-btn'),
+                tutorialCloneContainer: document.getElementById('tutorial-clone-container'),
+                infoBubble: document.getElementById('info-bubble'),
+                adminBubble: document.getElementById('admin-panel-bubble'),
+                modals: {
+                    basket: document.getElementById('basket-modal-overlay'),
+                    info: document.getElementById('info-modal-overlay'),
+                    adminForm: document.getElementById('admin-form-modal-overlay'),
+                    imagePreview: document.getElementById('image-preview-modal-overlay'),
+                    contentEditor: document.getElementById('content-editor-modal-overlay'),
+                    confirmation: document.getElementById('confirmation-modal-overlay'),
+                    login: document.getElementById('login-modal-overlay'),
+                    disclaimer: document.getElementById('disclaimer-modal-overlay'),
+                }
+            };
+
+            // --- 4. SERVICES (Firebase & Core Logic) ---
+            const services = {
+                db: null,
+                auth: null,
+                initFirebase() {
+                    const app = initializeApp(config.firebase);
+                    this.db = getFirestore(app);
+                    this.auth = getAuth(app);
+                },
+                initListeners() {
+                    onAuthStateChanged(this.auth, (user) => {
+                        state.user = user;
+                        state.isAdminView = !!user;
+                        ui.render();
+                    });
+                    onSnapshot(doc(this.db, 'settings', 'siteContent'), (docSnap) => {
+                        if (docSnap.exists()) {
+                            const data = docSnap.data();
+                            state.siteContent = { groupSubtitles: {}, groupBanners: {}, disclaimerText: "", memberQuotes: {}, ...data };
+                        }
+                        state.isDataReady.content = true;
+                        this.checkInitialRender();
+                    }, (error) => console.error("Error fetching site content:", error));
+                    onSnapshot(doc(this.db, 'settings', 'metadata'), (docSnap) => {
+                        if (docSnap.exists()) state.metadata = { groupLogos: {}, ...docSnap.data() };
+                        state.isDataReady.metadata = true;
+                        this.checkInitialRender();
+                    }, (error) => console.error("Error fetching metadata:", error));
+                    onSnapshot(collection(this.db, 'cards'), (snapshot) => {
+                        state.cards = snapshot.docs.map(doc => ({
+                            docId: doc.id,
+                            id: doc.data().displayId || doc.id,
+                            version: doc.data().description || '',
+                            image: doc.data().imageUrl || `https://placehold.co/220x341/121212/ff4757?text=Image+Missing&font=playfair+display`,
+                            backImage: doc.data().backImage || `https://placehold.co/220x341/1e1e1e/ffffff?text=Card+Back&font=playfair+display`,
+                            dateAdded: doc.data().createdAt ? doc.data().createdAt.toDate() : new Date(),
+                            ...doc.data()
+                        }));
+                        state.basket = state.basket.filter(item =>
+                            state.cards.some(card => card.docId === item.docId && card.status === 'available')
+                        );
+                        state.isDataReady.cards = true;
+                        this.checkInitialRender();
+                    }, (error) => console.error("Error fetching cards:", error));
+                },
+                checkInitialRender() {
+                    if (Object.values(state.isDataReady).every(Boolean)) {
+                        ui.render();
+                        handlers.checkDisclaimer();
+                    }
+                },
+                async login(email, password) { return signInWithEmailAndPassword(this.auth, email, password); },
+                async logout() { return signOut(this.auth); },
+                async saveCard(cardData, docId) {
+                    if (docId) {
+                        return updateDoc(doc(this.db, 'cards', docId), cardData);
+                    } else {
+                        const groupPrefix = config.groupPrefixes[cardData.group] || 'XX';
+                        const memberPrefix = (cardData.group === 'IU' && cardData.member === 'IU') ? config.memberPrefixes.IU : cardData.member.charAt(0).toUpperCase();
+                        const q = query(collection(this.db, 'cards'), where('group', '==', cardData.group), where('member', '==', cardData.member));
+                        const querySnapshot = await getDocs(q);
+                        let maxCardNum = 0;
+                        querySnapshot.forEach(docSnap => {
+                            const numPart = (docSnap.data().displayId || '').split('-')[2];
+                            if (numPart) maxCardNum = Math.max(maxCardNum, parseInt(numPart, 10) || 0);
+                        });
+                        cardData.displayId = `${groupPrefix}-${memberPrefix}-${String(maxCardNum + 1).padStart(3, '0')}`;
+                        cardData.createdAt = serverTimestamp();
+                        return addDoc(collection(this.db, 'cards'), cardData);
+                    }
+                },
+                async deleteCard(docId) { return deleteDoc(doc(this.db, "cards", docId)); },
+                async saveSiteContent(content) { return setDoc(doc(this.db, 'settings', 'siteContent'), content, { merge: true }); },
+                async bulkUpdate(docIds, action, value) {
+                    const promises = [];
+                    docIds.forEach(docId => {
+                        if (action === 'delete') {
+                            promises.push(this.deleteCard(docId));
+                        } else {
+                            const updateData = { [action]: value };
+                            promises.push(updateDoc(doc(this.db, 'cards', docId), updateData));
+                        }
+                    });
+                    return Promise.all(promises);
+                }
+            };
+
+            // --- 5. UTILITY FUNCTIONS ---
+            const utils = {
+                calculateDiscountedPrice(originalPrice, discountPercentage) {
+                    if (!discountPercentage || discountPercentage === 0) return originalPrice;
+                    let discountAmount = 0;
+                    if (discountPercentage === 10) discountAmount = Math.max(0.50, originalPrice * 0.10);
+                    else if (discountPercentage === 20) discountAmount = Math.max(1.00, originalPrice * 0.20);
+                    const rawDiscountedPrice = originalPrice - discountAmount;
+                    const roundedPrice = Math.ceil(rawDiscountedPrice * 2) / 2;
+                    return Math.max(1.00, roundedPrice);
+                },
+                groupData(data) {
+                    return data.reduce((acc, card) => {
+                        (acc[card.group] = acc[card.group] || {})[card.member] = (acc[card.group][card.member] || []);
+                        acc[card.group][card.member].push(card);
+                        return acc;
+                    }, {});
+                },
+                showMessageBox(message, type = 'info', duration = 3000) {
+                    const box = document.createElement('div');
+                    box.className = `message-box ${type}`;
+                    box.textContent = message;
+                    document.body.appendChild(box);
+                    setTimeout(() => box.classList.add('visible'), 10);
+                    setTimeout(() => {
+                        box.classList.remove('visible');
+                        setTimeout(() => box.remove(), 300);
+                    }, duration);
+                }
+            };
+
+            // --- 6. UI RENDERING MODULE ---
+            const ui = {
+                render() {
+                    dom.userView.style.display = state.isAdminView ? 'none' : 'block';
+                    dom.adminView.style.display = state.isAdminView ? 'block' : 'none';
+                    if (state.isAdminView) {
+                        this.renderAdminView();
+                    } else {
+                        if (!state.isDataReady.cards) {
+                            this.renderSkeletonLoader();
+                        } else {
+                            this.renderUserView();
+                        }
+                    }
+                },
+                renderUserView() {
+                    dom.siteTitle.textContent = state.siteContent.title;
+                    dom.siteSubtitle.innerHTML = state.siteContent.subtitle.replace(/\n/g, '<br>');
+                    this.renderCollection();
+                    this.updateFloatingBasket();
+                },
+                renderCollection() {
+                    const availableCards = state.cards.filter(card => card.status !== 'sold' && card.status !== 'archived');
+                    const groupedData = utils.groupData(availableCards);
+                    
+                    const sectionsToRender = [];
+                    const groupOrder = state.metadata.groupOrder || [];
+                    
+                    groupOrder.forEach(groupName => {
+                        const membersInGroup = state.metadata.memberOrder?.[groupName] || [];
+                        const membersWithCards = membersInGroup.filter(memberName =>
+                            groupedData[groupName]?.[memberName]?.length > 0
+                        );
+                        if (membersWithCards.length > 0) {
+                            sectionsToRender.push({ type: 'group', name: groupName });
+                            membersWithCards.forEach(memberName => {
+                                sectionsToRender.push({ type: 'member', group: groupName, name: memberName, cards: groupedData[groupName][memberName] });
+                            });
+                        }
+                    });
+
+                    dom.collectionContainer.innerHTML = '';
+                    
+                    if (dom.headerScrollArrow) {
+                        dom.headerScrollArrow.style.opacity = sectionsToRender.length > 0 ? '1' : '0';
+                    }
+
+                    if (groupOrder.length === 0 && state.cards.length > 0) {
+                        dom.collectionContainer.innerHTML = `<p class="text-center text-xl text-gray-400 p-8">Metadata not found.</p>`;
+                        return;
+                    }
+
+                    sectionsToRender.forEach((sectionData, index) => {
+                        let sectionEl;
+                        if (sectionData.type === 'group') {
+                            sectionEl = this.createGroupIntroSection(sectionData.name);
+                        } else {
+                            sectionEl = this.createMemberSection(sectionData.group, sectionData.name, sectionData.cards);
+                        }
+
+                        if (index < sectionsToRender.length - 1) { 
+                            const arrow = document.createElement('div');
+                            arrow.className = 'scroll-down-arrow';
+                            arrow.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3" /></svg>`;
+                            
+                            const nextSectionData = sectionsToRender[index + 1];
+                            let nextArrowColor;
+                            if (nextSectionData.type === 'group') {
+                                nextArrowColor = config.colors[nextSectionData.name]?.group;
+                            } else { 
+                                nextArrowColor = config.colors[nextSectionData.group]?.[nextSectionData.name];
+                            }
+                            if (nextArrowColor) {
+                                arrow.style.color = nextArrowColor;
+                            }
+
+                            sectionEl.appendChild(arrow);
+                        }
+                        
+                        dom.collectionContainer.appendChild(sectionEl);
+                    });
+                    this.renderFloatingNav(sectionsToRender);
+                    this.updateFloatingBasket();
+                    this.initIntersectionObserver();
+                },
+                createGroupIntroSection(groupName) {
+                    const section = document.createElement('section');
+                    const sectionId = `group-${groupName.toLowerCase().replace(/\s/g, '-')}`;
+                    section.id = sectionId;
+                    section.className = 'showcase-section group-intro text-center';
+                    const groupColor = config.colors[groupName]?.group || '#ffffff';
+                    const glowRgb = config.glowColors[groupName] || '255, 71, 87';
+                    section.style.setProperty('--hero-glow-color', `rgba(${glowRgb}, 0.5)`);
+                    section.dataset.color = groupColor;
+                    section.dataset.groupColor = groupColor;
+                    const bannerUrl = state.siteContent.groupBanners?.[groupName];
+                    const logoUrl = state.metadata.groupLogos?.[groupName];
+                    section.innerHTML = `
+                        ${bannerUrl ? `<div class="group-banner" style="background-image: url(${bannerUrl})"></div>` : ''}
+                        <div class="title-container">
+                            <h2 class="hero-title font-display animate-in">${groupName}</h2>
+                            <p class="group-subtitle animate-in" style="transition-delay: 0.1s;">${(state.siteContent.groupSubtitles || {})[groupName] || ''}</p>
+                        </div>
+                        ${logoUrl ? `<img src="${logoUrl}" class="group-logo animate-in" style="transition-delay: 0.2s;">` : ''}
+                    `;
+                    return section;
+                },
+                createMemberSection(groupName, memberName, cards) {
+                    const section = document.createElement('section');
+                    const memberColor = config.colors[groupName]?.[memberName] || '#ffffff';
+                    const groupColor = config.colors[groupName]?.group || '#ffffff';
+                    
+                    const isIU = groupName === 'IU' && memberName === 'IU';
+                    const memberNameColor = isIU ? 'var(--color-iu-member)' : memberColor;
+                    const groupNameColor = isIU ? 'var(--color-iu)' : memberColor;
+                    
+                    const sectionId = `member-${groupName.toLowerCase().replace(/\s/g, '-')}-${memberName.toLowerCase().replace(/\s/g, '-')}`;
+                    section.className = 'showcase-section member-section-container';
+                    section.id = sectionId;
+                    section.dataset.color = memberColor;
+                    section.dataset.groupColor = groupColor;
+                    section.style.setProperty('--member-color', memberColor);
+                    section.style.setProperty('--group-color', groupColor);
+                    
+                    if (!state.userFilters[sectionId]) {
+                        state.userFilters[sectionId] = {
+                            searchTerm: '',
+                            album: 'All',
+                            version: 'All',
+                            tags: new Set()
+                        };
+                    }
+                    
+                    const filteredCards = this.applyUserFilters(cards, sectionId);
+
+                    const initialCard = filteredCards[0] || {};
+                    const finalPrice = utils.calculateDiscountedPrice(initialCard.price || 0, initialCard.discount);
+                    const isInBasket = state.basket.some(item => item.docId === initialCard.docId);
+                    const signatureUrl = state.metadata.memberSignatures?.[groupName]?.[memberName];
+                    const quote = state.siteContent.memberQuotes?.[groupName]?.[memberName];
+
+                    const cardsPerPage = 10;
+                    const totalPages = Math.ceil(filteredCards.length / cardsPerPage);
+                    const showPagination = filteredCards.length > cardsPerPage;
+
+                    section.innerHTML = `
+                        <div class="room-backdrop"></div>
+                        ${quote ? `<div class="member-quote animate-in" style="transition-delay: 0.3s;">${quote.replace(/\n/g, '<br>')}</div>` : ''}
+                        <div class="member-section">
+                            <div class="card-details-panel">
+                                <p class="card-id-text animate-in">${initialCard.id || 'N/A'}</p>
+                                <h2 class="member-name animate-in" style="color: ${memberNameColor}; transition-delay: 0.05s;">${memberName}</h2>
+                                <p class="group-name animate-in" style="color: ${groupNameColor}; transition-delay: 0.1s;">${groupName}</p>
+                                <p class="album-name animate-in" style="transition-delay: 0.15s;">${initialCard.album || (filteredCards.length === 0 ? 'No matching cards found' : '')}</p>
+                                <p class="version-name animate-in" style="transition-delay: 0.2s;">${initialCard.version || ''}</p>
+                                <p class="price-tag animate-in" style="transition-delay: 0.25s;">${initialCard.price ? `€${finalPrice.toFixed(2)}` : ''}</p>
+                                <div class="original-price-container animate-in" style="transition-delay: 0.3s;">
+                                    ${(initialCard.price && finalPrice < initialCard.price) ? `<span class="original-price">€${(initialCard.price || 0).toFixed(2)}</span>` : ''}
+                                </div>
+                                <button class="add-to-basket-main-btn animate-in ${isInBasket ? 'in-basket' : ''}" data-doc-id="${initialCard.docId}" ${!initialCard.docId || initialCard.status !== 'available' ? 'disabled' : ''} style="transition-delay: 0.35s;">
+                                    ${initialCard.status ? (initialCard.status.charAt(0).toUpperCase() + initialCard.status.slice(1)) : 'Add to Basket'}
+                                </button>
+                            </div>
+                            <div class="carousel-container">
+                                <div class="carousel"></div>
+                                <div class="carousel-arrow left" data-direction="1">&#9664;</div>
+                                <div class="carousel-arrow right" data-direction="-1">&#9654;</div>
+                                ${showPagination ? `
+                                <div class="carousel-pagination">
+                                    <button class="page-btn prev-page">&#9664;</button>
+                                    <span class="page-indicator">1 / ${totalPages}</span>
+                                    <button class="page-btn next-page">&#9654;</button>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                        ${signatureUrl ? `<div class="member-signature animate-in" style="-webkit-mask-image: url(${signatureUrl}); mask-image: url(${signatureUrl}); background-color: var(--member-color); transition-delay: 0.3s;"></div>` : ''}
+                    `;
+                    this.initCarousel(section, filteredCards, sectionId, groupName);
+                    return section;
+                },
+                createCarouselCard(card, index, pageCards) {
+                    const isInBasket = state.basket.some(item => item.docId === card.docId);
+                    const isNew = (Date.now() - card.dateAdded.getTime()) < 7 * 24 * 60 * 60 * 1000;
+
+                    let tagsHtml = '';
+                    if (isNew) tagsHtml += '<div class="tag">NEW</div>';
+                    if (card.discount === 20) tagsHtml += '<div class="tag" style="color: #BA55D3;">SUPER SALE</div>';
+                    else if (card.discount === 10) tagsHtml += '<div class="tag" style="color: #FF4757;">SALE</div>';
+                    if (card.isRare) tagsHtml += `<div class="tag" style="color: gold;">RARE</div>`;
+
+                    return `
+                        <div class="carousel-card ${card.status || ''} ${index === 0 ? 'is-active show-tags' : ''} ${isInBasket ? 'in-basket' : ''}" data-doc-id="${card.docId}" data-index="${index}" data-is-new="${isNew}" data-is-rare="${card.isRare}">
+                            <div class="carousel-card-inner">
+                                <div class="carousel-card-face carousel-card-front">
+                                    <img src="${card.image}" onerror="this.onerror=null;this.src='https://placehold.co/220x341/121212/ff4757?text=Image+Missing&font=playfair+display';">
+                                    <div class="card-id-overlay">${card.id}</div>
+                                    <div class="card-tags">${tagsHtml}</div>
+                                    <div class="card-flip-overlay" title="Flip card"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><polyline points="23 20 23 14 17 14"></polyline><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"></path></svg></div>
+                                    <div class="card-click-overlay" ${card.status === 'available' ? '' : 'style="pointer-events:none;"'}></div>
+                                    <div class="card-added-indicator" style="color: ${config.colors[card.group]?.[card.member] || '#ffffff'};">&#x2764;</div>
+                                    ${card.status ? `<div class="card-status-overlay">${card.status.toUpperCase()}</div>` : ''}
+                                    <div class="card-sheen-overlay"></div>
+                                    <div class="sparkle-container"></div>
+                                </div>
+                                <div class="carousel-card-face carousel-card-back">
+                                    <img src="${card.backImage}" onerror="this.onerror=null;this.src='https://placehold.co/220x341/1e1e1e/ffffff?text=Card+Back&font=playfair+display';">
+                                    <div class="card-flip-overlay" title="Flip card"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><polyline points="23 20 23 14 17 14"></polyline><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"></path></svg></div>
+                                    <div class="card-status-overlay-back"></div>
+                                    ${card.status ? `<div class="card-status-overlay">${card.status.toUpperCase()}</div>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                },
+                updateFloatingBasket() {
+                    const allArrows = document.querySelectorAll('.scroll-down-arrow');
+                    if (state.basket.length > 0) {
+                        const totalItems = state.basket.length;
+                        const totalPrice = state.basket.reduce((sum, item) => sum + utils.calculateDiscountedPrice(item.price, item.discount), 0);
+                        dom.basketInfo.innerHTML = `<span>${totalItems} item${totalItems > 1 ? 's' : ''}</span> | <strong>Total: €${totalPrice.toFixed(2)}</strong>`;
+                        dom.floatingEmptyBtn.classList.remove('hidden');
+                        dom.floatingBasket.classList.add('visible');
+                        allArrows.forEach(arrow => arrow.classList.add('raised'));
+                    } else {
+                        dom.floatingEmptyBtn.classList.add('hidden');
+                        dom.floatingBasket.classList.remove('visible');
+                        allArrows.forEach(arrow => arrow.classList.remove('raised'));
+                    }
+                },
+                updateCardUIState(docId) {
+                    const isInBasket = state.basket.some(item => item.docId === docId);
+                    const card = state.cards.find(c => c.docId === docId);
+                    if (!card) return;
+
+                    const groupColor = config.colors[card.group]?.group;
+
+                    document.querySelectorAll(`[data-doc-id='${docId}']`).forEach(el => {
+                        if (el.classList.contains('carousel-card')) {
+                            el.classList.toggle('in-basket', isInBasket);
+                        }
+                        if (el.classList.contains('add-to-basket-main-btn')) {
+                            el.classList.toggle('in-basket', isInBasket);
+                            el.textContent = isInBasket ? 'In Basket' : 'Add to Basket';
+                            
+                            if (isInBasket && groupColor) {
+                                el.style.backgroundColor = groupColor;
+                            } else {
+                                el.style.backgroundColor = '';
+                            }
+                        }
+                    });
+                },
+                renderFloatingNav(sectionsToRender) {
+                    dom.floatingNavContent.innerHTML = ''; // Clear previous nav
+
+                    // Create a map to hold elements for each group row
+                    const groupDataMap = {};
+                    (state.metadata.groupOrder || []).forEach(groupName => {
+                        groupDataMap[groupName] = { memberBtns: [], groupBtn: null };
+                    });
+
+                    // Create and categorize all buttons
+                    sectionsToRender.forEach(section => {
+                        const btn = document.createElement('a');
+                        btn.className = 'nav-btn';
+                        btn.href = `#${section.type}-${section.type === 'group' ? section.name.toLowerCase().replace(/\s/g, '-') : `${section.group.toLowerCase().replace(/\s/g, '-')}-${section.name.toLowerCase().replace(/\s/g, '-')}`}`;
+
+                        if (section.type === 'group') {
+                            const groupColor = config.colors[section.name]?.group || 'var(--default-ui-color)';
+                            btn.style.backgroundColor = groupColor;
+                            // --- MODIFIED: Swapped IU lettering ---
+                            if (section.name === 'IU') {
+                                btn.textContent = config.memberPrefixes.IU; // 'U'
+                            } else {
+                                btn.textContent = config.groupPrefixes[section.name] || section.name.charAt(0);
+                            }
+                            
+                            if (groupDataMap[section.name]) {
+                                groupDataMap[section.name].groupBtn = btn;
+                            }
+                        } else { // member
+                            const memberColor = config.colors[section.group]?.[section.name] || 'var(--default-ui-color)';
+                            btn.style.backgroundColor = memberColor;
+                            // --- MODIFIED: Swapped IU lettering ---
+                            if (section.group === 'IU' && section.name === 'IU') {
+                                btn.textContent = config.groupPrefixes.IU; // 'I'
+                            } else {
+                                btn.textContent = section.name.charAt(0);
+                            }
+
+                            if (groupDataMap[section.group]) {
+                                groupDataMap[section.group].memberBtns.push(btn);
+                            }
+                        }
+                    });
+
+                    // Create and add the Home button row
+                    const homeRow = document.createElement('div');
+                    homeRow.className = 'nav-row';
+                    const homeBtn = document.createElement('a');
+                    homeBtn.href = '#main-section';
+                    homeBtn.className = 'nav-btn';
+                    homeBtn.style.backgroundColor = 'var(--default-ui-color)';
+                    homeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`;
+                    homeRow.appendChild(homeBtn);
+                    dom.floatingNavContent.appendChild(homeRow);
+
+                    // Build and append each group row in the correct order
+                    (state.metadata.groupOrder || []).forEach(groupName => {
+                        const groupData = groupDataMap[groupName];
+                        if (groupData && (groupData.memberBtns.length > 0 || groupData.groupBtn)) {
+                            const groupRow = document.createElement('div');
+                            groupRow.className = 'nav-row';
+                            
+                            groupData.memberBtns.forEach(btn => groupRow.appendChild(btn));
+                            if (groupData.groupBtn) {
+                                groupRow.appendChild(groupData.groupBtn);
+                            }
+                            
+                            dom.floatingNavContent.appendChild(groupRow);
+                        }
+                    });
+                },
+                renderAdminView() {
+                    dom.adminView.innerHTML = `
+                        <div class="admin-header">
+                            <h1 class="text-3xl font-bold">Admin Panel</h1>
+                            <div class="admin-controls">
+                                <button data-action="edit-content" class="bg-blue-500 text-white py-2 px-4 rounded-full">Edit Site Content</button>
+                                <button data-action="add-card" class="bg-green-500 text-white py-2 px-4 rounded-full">Add New Card</button>
+                                <button data-action="logout" class="bg-red-500 text-white py-2 px-4 rounded-full">Logout</button>
+                            </div>
+                        </div>
+                        <div class="admin-filters-sort-search">
+                            <div class="form-group"><label>Group:</label><select data-filter="group"></select></div>
+                            <div class="form-group"><label>Member:</label><select data-filter="member"></select></div>
+                            <div class="form-group"><label>Status:</label><select data-filter="status"><option value="All">All (Default)</option><option value="available">Available</option><option value="reserved">Reserved</option><option value="sold">Sold</option><option value="archived">Archived</option><option value="Sale">On Sale</option><option value="New">New</option></select></div>
+                            <div class="form-group"><label>Sort:</label><select data-sort="by"><option value="default">Default</option><option value="id">ID</option><option value="price">Price</option><option value="group">Group</option><option value="member">Member</option><option value="album">Album</option><option value="version">Version</option><option value="dateAdded">Date Added</option></select></div>
+                            <div class="form-group"><label>Order:</label><select data-sort="order"><option value="asc">Asc</option><option value="desc">Desc</option></select></div>
+                            <div class="form-group flex-grow"><label>Search:</label><input type="text" data-filter="searchTerm" placeholder="Search..."></div>
+                        </div>
+                        <div id="admin-list-info" class="text-gray-400 mb-4"></div>
+                        <div id="admin-bulk-actions" class="admin-bulk-actions"></div>
+                        <div id="admin-card-list" class="admin-card-list"></div>
+                    `;
+                    this.populateAdminFilters();
+                    this.applyAdminFiltersAndSort();
+                },
+                populateAdminFilters() {
+                    const groupFilter = dom.adminView.querySelector('[data-filter="group"]');
+                    groupFilter.innerHTML = '<option value="All">All Groups</option>';
+                    (state.metadata.groupOrder || []).forEach(groupName => {
+                        groupFilter.innerHTML += `<option value="${groupName}">${groupName}</option>`;
+                    });
+                    groupFilter.value = state.adminFilters.group;
+                    this.updateAdminMemberFilter();
+                    dom.adminView.querySelector('[data-filter="member"]').value = state.adminFilters.member;
+                    dom.adminView.querySelector('[data-filter="status"]').value = state.adminFilters.status;
+                    dom.adminView.querySelector('[data-sort="by"]').value = state.adminSort.by;
+                    dom.adminView.querySelector('[data-sort="order"]').value = state.adminSort.order;
+                    dom.adminView.querySelector('[data-filter="searchTerm"]').value = state.adminFilters.searchTerm;
+                },
+                updateAdminMemberFilter() {
+                    const memberFilter = dom.adminView.querySelector('[data-filter="member"]');
+                    memberFilter.innerHTML = '<option value="All">All Members</option>';
+                    const selectedGroup = state.adminFilters.group;
+                    const members = selectedGroup === 'All'
+                        ? Object.values(state.metadata.memberOrder || {}).flat()
+                        : (state.metadata.memberOrder || {})[selectedGroup] || [];
+                    new Set(members).forEach(memberName => {
+                        memberFilter.innerHTML += `<option value="${memberName}">${memberName}</option>`;
+                    });
+                },
+                applyAdminFiltersAndSort() {
+                    let filteredData = [...state.cards];
+                    const { group, member, status, searchTerm } = state.adminFilters;
+                    const { by, order } = state.adminSort;
+                    if (group !== 'All') filteredData = filteredData.filter(c => c.group === group);
+                    if (member !== 'All') filteredData = filteredData.filter(c => c.member === member);
+                    
+                    if (status === 'All') {
+                        filteredData = filteredData.filter(c => c.status !== 'archived');
+                    } else if (status === 'Sale') {
+                        filteredData = filteredData.filter(c => c.discount > 0);
+                    } else if (status === 'New') {
+                        filteredData = filteredData.filter(c => (Date.now() - c.dateAdded.getTime()) < 7 * 24 * 60 * 60 * 1000);
+                    } else {
+                        filteredData = filteredData.filter(c => c.status === status);
+                    }
+
+                    if (searchTerm) {
+                        const term = searchTerm.toLowerCase();
+                        filteredData = filteredData.filter(c => Object.values(c).some(val => String(val).toLowerCase().includes(term)));
+                    }
+                    filteredData.sort((a, b) => {
+                        let compare = 0;
+                        if (by === 'default') {
+                            const groupCompare = (state.metadata.groupOrder || []).indexOf(a.group) - (state.metadata.groupOrder || []).indexOf(b.group);
+                            if (groupCompare !== 0) return groupCompare;
+                            const memberCompare = ((state.metadata.memberOrder || {})[a.group] || []).indexOf(a.member) - ((state.metadata.memberOrder || {})[b.group] || []).indexOf(b.member);
+                            if (memberCompare !== 0) return memberCompare;
+                            return a.id.localeCompare(b.id);
+                        }
+                        const valA = a[by];
+                        const valB = b[by];
+                        if (typeof valA === 'string') compare = valA.localeCompare(valB);
+                        else if (typeof valA === 'number') compare = valA - valB;
+                        else if (valA instanceof Date) compare = valA.getTime() - b.dateAdded.getTime();
+                        return order === 'asc' ? compare : -compare;
+                    });
+                    this.renderAdminList(filteredData);
+                },
+                renderAdminList(dataToRender) {
+                    const listEl = document.getElementById('admin-card-list');
+                    if (!listEl) return;
+                    document.getElementById('admin-list-info').textContent = `Showing ${dataToRender.length} of ${state.cards.length} total cards.`;
+                    listEl.innerHTML = dataToRender.map(card => {
+                        const memberColor = config.colors[card.group]?.[card.member] || '#ffffff';
+                        let statusHtml = `<span class="capitalize text-gray-300">(${card.status})</span>`;
+                        if ((Date.now() - card.dateAdded.getTime()) < 7 * 24 * 60 * 60 * 1000) statusHtml += `<span class="text-white ml-2">New</span>`;
+                        if (card.discount === 20) statusHtml += `<span class="text-purple-400 ml-2">Super Sale</span>`;
+                        else if (card.discount === 10) statusHtml += `<span class="text-red-400 ml-2">Sale</span>`;
+                        if (card.isRare) statusHtml += `<span class="text-yellow-400 ml-2">Rare</span>`;
+
+                        return `
+                            <div class="admin-card-item ${card.status || ''}-card ${state.adminSelectedIds.has(card.docId) ? 'selected' : ''}" data-doc-id="${card.docId}">
+                                <input type="checkbox" class="bulk-checkbox w-5 h-5 pointer-events-none" ${state.adminSelectedIds.has(card.docId) ? 'checked' : ''}>
+                                <img src="${card.image}" data-action="preview-image" class="admin-card-thumb" onerror="this.onerror=null;this.src='https://placehold.co/50x77/121212/ff4757?text=Img';">
+                                <div class="admin-card-info" style="color: ${memberColor};">
+                                    <span><strong>ID:</strong> ${card.id}</span>
+                                    <span><strong>Group:</strong> ${card.group}</span>
+                                    <span><strong>Member:</strong> ${card.member}</span>
+                                    <span><strong>Album:</strong> ${card.album}</span>
+                                    <span><strong>Version:</strong> ${card.version}</span>
+                                    <span><strong>Price:</strong> €${card.price.toFixed(2)}</span>
+                                    <span><strong>Status:</strong> ${statusHtml}</span>
+                                </div>
+                                <div class="admin-card-actions">
+                                    <button data-action="edit-card" class="bg-blue-600 text-white px-3 py-1 rounded-md">Edit</button>
+                                    <button data-action="delete-card" class="bg-red-600 text-white px-3 py-1 rounded-md">Delete</button>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                    ui.renderBulkActions();
+                },
+                renderBulkActions() {
+                    const bulkActionsBar = document.getElementById('admin-bulk-actions');
+                    if (!bulkActionsBar) return;
+                    const count = state.adminSelectedIds.size;
+                    bulkActionsBar.innerHTML = `
+                        <span class="text-white self-center">${count} selected</span>
+                        <button data-action="unselect-all" class="bg-gray-500 p-2 rounded-md" ${count === 0 ? 'disabled' : ''}>Unselect All</button>
+                        <button data-action="bulk-update" data-field="discount" data-value="10" class="bg-red-500 p-2 rounded-md" ${count === 0 ? 'disabled' : ''}>Sale</button>
+                        <button data-action="bulk-update" data-field="discount" data-value="20" class="bg-purple-500 p-2 rounded-md" ${count === 0 ? 'disabled' : ''}>Super Sale</button>
+                        <button data-action="bulk-update" data-field="discount" data-value="0" class="bg-gray-500 p-2 rounded-md" ${count === 0 ? 'disabled' : ''}>Clear Sale</button>
+                        <button data-action="bulk-update" data-field="status" data-value="available" class="bg-green-500 p-2 rounded-md" ${count === 0 ? 'disabled' : ''}>Mark Available</button>
+                        <button data-action="bulk-update" data-field="status" data-value="reserved" class="bg-orange-500 p-2 rounded-md" ${count === 0 ? 'disabled' : ''}>Mark Reserved</button>
+                        <button data-action="bulk-update" data-field="status" data-value="sold" class="bg-gray-600 p-2 rounded-md" ${count === 0 ? 'disabled' : ''}>Mark Sold</button>
+                        <button data-action="toggle-rare" class="bg-yellow-600 text-white p-2 rounded-md" ${count === 0 ? 'disabled' : ''}>Toggle Rare</button>
+                        <button data-action="bulk-archive" class="bg-indigo-700 p-2 rounded-md" ${count === 0 ? 'disabled' : ''}>Archive</button>
+                    `;
+                },
+                openModal(modalKey, contentHtml, isDismissable = true) {
+                    const modal = dom.modals[modalKey];
+                    if (modal) {
+                        modal.innerHTML = contentHtml;
+                        if (!isDismissable) {
+                            modal.dataset.dismissable = 'false';
+                        } else {
+                            delete modal.dataset.dismissable;
+                        }
+                        modal.classList.add('visible');
+                    }
+                },
+                closeModal(modalKey) {
+                    const modal = dom.modals[modalKey];
+                    if (modal) {
+                        modal.classList.remove('visible');
+                    }
+                },
+                initIntersectionObserver() {
+                    const observer = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                            const sectionId = entry.target.id;
+                            if (entry.isIntersecting) {
+                                entry.target.classList.add('is-visible');
+                                const memberColor = entry.target.dataset.color;
+                                const groupColor = entry.target.dataset.groupColor;
+                                
+                                const newUIColor = memberColor || groupColor || 'var(--default-ui-color)';
+                                const newEmptyBtnColor = groupColor || 'var(--default-ui-color)';
+
+                                document.documentElement.style.setProperty('--floating-ui-color', newUIColor);
+                                dom.floatingEmptyBtn.style.backgroundColor = newEmptyBtnColor;
+                                
+                                const groupNameForGlow = Object.keys(config.colors).find(key => {
+                                    const colorData = config.colors[key];
+                                    return colorData.group === entry.target.dataset.groupColor;
+                                });
+                                const glowRgb = config.glowColors[groupNameForGlow] || '119, 119, 119';
+                                document.documentElement.style.setProperty('--hero-glow-color', `rgba(${glowRgb}, 0.5)`);
+
+                                if (sectionId.startsWith('member-')) {
+                                    state.activeMemberSectionId = sectionId;
+                                    this.updateFilterSidebarUI();
+                                }
+
+                            } else {
+                                entry.target.classList.remove('is-visible');
+                            }
+                        });
+                    }, { threshold: 0.6 });
+                    document.querySelectorAll('.showcase-section').forEach(section => observer.observe(section));
+                },
+                initCarousel(section, cards, sectionId, groupName) {
+                    const detailsPanel = section.querySelector('.card-details-panel');
+                    const carouselEl = section.querySelector('.carousel');
+                    const leftArrow = section.querySelector('.carousel-arrow.left');
+                    const rightArrow = section.querySelector('.carousel-arrow.right');
+                    const prevPageBtn = section.querySelector('.prev-page');
+                    const nextPageBtn = section.querySelector('.page-btn.next-page');
+                    const pageIndicator = section.querySelector('.page-indicator');
+
+                    cards.sort((a, b) => {
+                        const albumCompare = (a.album || '').localeCompare(b.album || '');
+                        if (albumCompare !== 0) return albumCompare;
+                        const versionCompare = (a.description || '').localeCompare(b.description || '');
+                        if (versionCompare !== 0) return versionCompare;
+                        return (a.id || '').localeCompare(b.id || '');
+                    });
+
+                    const cardsPerPage = 10;
+                    const totalPages = Math.ceil(cards.length / cardsPerPage);
+                    state.carouselPages[sectionId] = 0;
+
+                    let cardsForPage = [];
+                    let currentIndex = 0;
+                    let rotation = 0;
+                    let angle = 0;
+                    
+                    const renderPage = () => {
+                        const currentPage = state.carouselPages[sectionId] || 0;
+                        const startIndex = currentPage * cardsPerPage;
+                        const endIndex = startIndex + cardsPerPage;
+                        cardsForPage = cards.slice(startIndex, endIndex);
+
+                        carouselEl.innerHTML = cardsForPage.map((card, i) => this.createCarouselCard(card, i, cardsForPage)).join('');
+                        
+                        const baseRadius = 400;
+                        const cardWidth = 220;
+                        
+                        leftArrow.style.left = `calc(50% - ${baseRadius / 2}px - ${cardWidth / 4}px)`;
+                        rightArrow.style.left = `calc(50% + ${baseRadius / 2}px + ${cardWidth / 4}px)`;
+                        
+                        currentIndex = 0;
+                        rotation = 0;
+                        angle = cardsForPage.length > 0 ? 360 / cardsForPage.length : 0;
+                        
+                        const cardElements = carouselEl.querySelectorAll('.carousel-card');
+                        cardElements.forEach((card, i) => {
+                            card.style.transform = `rotateY(${angle * i}deg) translateZ(${baseRadius}px)`;
+                        });
+                        
+                        carouselEl.style.transform = `rotateY(0deg)`;
+                        
+                        if (pageIndicator) {
+                            pageIndicator.textContent = `${currentPage + 1} / ${totalPages}`;
+                            prevPageBtn.disabled = currentPage === 0;
+                            nextPageBtn.disabled = currentPage === totalPages - 1;
+                        }
+
+                        updateDetails();
+                    };
+
+                    let isDown = false, startX, startRotation;
+
+                    const spawnSparkles = (sparkleContainer, color = 'white') => {
+                        sparkleContainer.innerHTML = '';
+                        const numSparkles = (color === 'gold') ? 40 : 20;
+                        for (let i = 0; i < numSparkles; i++) {
+                            const sparkle = document.createElement('div');
+                            sparkle.className = 'sparkle';
+                            const size = Math.random() * 3 + 1;
+                            sparkle.style.width = `${size}px`;
+                            sparkle.style.height = `${size}px`;
+                            
+                            sparkle.style.setProperty('--sparkle-color', color);
+                            if (color === 'gold') {
+                                sparkle.style.setProperty('--sparkle-color-shadow-1', 'rgba(255,215,0,0.7)');
+                                sparkle.style.setProperty('--sparkle-color-shadow-2', 'rgba(255,215,0,0.4)');
+                            } else {
+                                sparkle.style.setProperty('--sparkle-color-shadow-1', 'rgba(255,255,255,0.7)');
+                                sparkle.style.setProperty('--sparkle-color-shadow-2', 'rgba(255,255,255,0.4)');
+                            }
+
+                            sparkle.style.left = `${Math.random() * 100}%`;
+                            sparkle.style.top = `${Math.random() * 100}%`;
+                            
+                            sparkle.style.setProperty('--sparkle-end-x', `${(Math.random() * 2 - 1) * 100}px`);
+                            sparkle.style.setProperty('--sparkle-end-y', `${(Math.random() * 2 - 1) * 100}px`);
+
+                            sparkle.style.animationDelay = `${Math.random() * 0.5}s`;
+
+                            sparkleContainer.appendChild(sparkle);
+                        }
+                    };
+
+                    const updateDetails = () => {
+                        if (cardsForPage.length === 0) {
+                            detailsPanel.querySelector('.card-id-text').textContent = 'N/A';
+                            detailsPanel.querySelector('.album-name').textContent = 'No matching cards found';
+                            detailsPanel.querySelector('.version-name').textContent = '';
+                            detailsPanel.querySelector('.price-tag').textContent = '';
+                            detailsPanel.querySelector('.original-price-container').innerHTML = '';
+                            const mainBtn = detailsPanel.querySelector('.add-to-basket-main-btn');
+                            mainBtn.disabled = true;
+                            mainBtn.textContent = 'Unavailable';
+                            mainBtn.classList.remove('in-basket');
+                            mainBtn.dataset.docId = '';
+                            return;
+                        }
+                        const card = cardsForPage[currentIndex];
+                        const finalPrice = utils.calculateDiscountedPrice(card.price, card.discount);
+                        const isInBasket = state.basket.some(item => item.docId === card.docId);
+                        detailsPanel.querySelector('.card-id-text').textContent = card.id;
+                        detailsPanel.querySelector('.album-name').textContent = card.album;
+                        detailsPanel.querySelector('.version-name').textContent = card.version;
+                        detailsPanel.querySelector('.price-tag').textContent = `€${finalPrice.toFixed(2)}`;
+                        detailsPanel.querySelector('.original-price-container').innerHTML = finalPrice < card.price ? `<span class="original-price">€${(card.price || 0).toFixed(2)}</span>` : '';
+                        const mainBtn = detailsPanel.querySelector('.add-to-basket-main-btn');
+                        mainBtn.dataset.docId = card.docId;
+                        mainBtn.disabled = card.status !== 'available';
+                        mainBtn.textContent = card.status ? (card.status.charAt(0).toUpperCase() + card.status.slice(1)) : (isInBasket ? 'In Basket' : 'Add to Basket');
+                        mainBtn.classList.toggle('in-basket', isInBasket);
+
+                        if (isInBasket) {
+                            const groupColor = config.colors[groupName]?.group || '#28a745';
+                            mainBtn.style.backgroundColor = groupColor;
+                        } else {
+                            mainBtn.style.backgroundColor = ''; 
+                        }
+                        
+                        const cardElements = carouselEl.querySelectorAll('.carousel-card');
+                        cardElements.forEach((cardEl, i) => {
+                            const isActive = i === currentIndex;
+                            const cardData = cardsForPage[i];
+                            const isNew = cardData.dateAdded && (Date.now() - cardData.dateAdded.getTime()) < 7 * 24 * 60 * 60 * 1000;
+                            const isRare = cardData.isRare;
+
+                            const numCards = cardsForPage.length;
+                            const leftNeighborIndex = (currentIndex - 1 + numCards) % numCards;
+                            const rightNeighborIndex = (currentIndex + 1) % numCards;
+
+                            const isNeighbor = (i === leftNeighborIndex || i === rightNeighborIndex);
+                            
+                            cardEl.classList.toggle('is-active', isActive);
+
+                            const sheenOverlay = cardEl.querySelector('.card-sheen-overlay');
+                            if (sheenOverlay) {
+                                sheenOverlay.classList.toggle('is-sheen-active', isActive || isNeighbor);
+                            }
+
+                            const sparkleContainer = cardEl.querySelector('.sparkle-container');
+                            if (sparkleContainer) {
+                                if (isActive) {
+                                    if (isRare) {
+                                        sparkleContainer.classList.add('has-sparkle');
+                                        spawnSparkles(sparkleContainer, 'gold');
+                                    } else if (isNew) {
+                                        sparkleContainer.classList.add('has-sparkle');
+                                        spawnSparkles(sparkleContainer, 'white');
+                                    } else {
+                                        sparkleContainer.classList.remove('has-sparkle');
+                                    }
+                                } else {
+                                    sparkleContainer.classList.remove('has-sparkle');
+                                }
+                            }
+
+                            if (isActive && cardEl.classList.contains('is-flipped')) {
+                                const innerCard = cardEl.querySelector('.carousel-card-inner');
+                                if (innerCard) {
+                                    innerCard.style.transition = 'none';
+                                    cardEl.classList.remove('is-flipped');
+                                    void innerCard.offsetWidth;
+                                    innerCard.style.transition = '';
+                                }
+                            }
+
+                            cardEl.classList.toggle('show-tags', isActive || isNeighbor);
+                        });
+                    };
+                    
+                    const rotateCarousel = (direction) => {
+                        if (cardsForPage.length === 0) return;
+                        rotation += angle * direction;
+                        currentIndex = (currentIndex - direction + cardsForPage.length) % cardsForPage.length;
+                        carouselEl.style.transform = `rotateY(${rotation}deg)`;
+                        updateDetails();
+                    };
+                    
+                    leftArrow.addEventListener('click', () => rotateCarousel(1));
+                    rightArrow.addEventListener('click', () => rotateCarousel(-1));
+
+                    if (prevPageBtn) {
+                        prevPageBtn.addEventListener('click', () => {
+                            if (state.carouselPages[sectionId] > 0) {
+                                state.carouselPages[sectionId]--;
+                                renderPage();
+                            }
+                        });
+                    }
+                    if (nextPageBtn) {
+                        nextPageBtn.addEventListener('click', () => {
+                            if (state.carouselPages[sectionId] < totalPages - 1) {
+                                state.carouselPages[sectionId]++;
+                                renderPage();
+                            }
+                        });
+                    }
+
+                    carouselEl.addEventListener('mousedown', (e) => {
+                        if (e.target.closest('.card-flip-overlay') || e.target.closest('.card-click-overlay') || e.target.closest('.card-status-overlay-back')) {
+                            return;
+                        }
+                        isDown = true;
+                        carouselEl.classList.add('is-dragging');
+                        startX = e.clientX;
+                        startRotation = rotation;
+                    });
+
+                    window.addEventListener('mouseup', () => {
+                        if (!isDown || cardsForPage.length === 0) return;
+                        isDown = false;
+                        carouselEl.classList.remove('is-dragging');
+                        rotation = Math.round(rotation / angle) * angle;
+                        currentIndex = (-(rotation / angle) % cardsForPage.length + cardsForPage.length) % cardsForPage.length;
+                        carouselEl.style.transition = 'transform 0.5s cubic-bezier(0.23, 1, 0.32, 1)';
+                        carouselEl.style.transform = `rotateY(${rotation}deg)`;
+                        updateDetails();
+                    });
+                    window.addEventListener('mousemove', (e) => {
+                        if (!isDown) return; e.preventDefault();
+                        const walk = (e.clientX - startX); rotation = startRotation + (walk * 0.5);
+                        carouselEl.style.transition = 'none'; 
+                        carouselEl.style.transform = `rotateY(${rotation}deg)`;
+                    });
+                    section.addEventListener('mousemove', e => {
+                        const cardInner = e.target.closest('.carousel-card-inner');
+                        if (!cardInner) return;
+                        const cardWrapper = cardInner.parentElement;
+                        const rect = cardWrapper.getBoundingClientRect();
+                        const x = e.clientX - rect.left, y = e.clientY - rect.top;
+                        const centerX = rect.width / 2, centerY = rect.height / 2;
+                        const rotateX = ((y - centerY) / centerY) * 5;
+                        const rotateY = ((centerX - x) / centerX) * 5;
+                        cardInner.style.setProperty('--tilt-x', `${rotateX}deg`);
+                        cardInner.style.setProperty('--tilt-y', `${rotateY}deg`);
+                    });
+                    section.addEventListener('mouseleave', e => {
+                        const cardInner = e.target.closest('.carousel-card-inner');
+                        if(cardInner) {
+                            cardInner.style.setProperty('--tilt-x', `0deg`);
+                            cardInner.style.setProperty('--tilt-y', `0deg`);
+                        }
+                    }, true);
+
+                    renderPage();
+                },
+                renderSkeletonLoader() {
+                    const skeletonGroup = `
+                        <section class="showcase-section">
+                            <div class="skeleton skeleton-text" style="width: 300px; height: 4rem; margin-bottom: 1rem;"></div>
+                            <div class="skeleton skeleton-text" style="width: 500px; height: 1.25rem;"></div>
+                        </section>
+                    `;
+                    const skeletonMember = `
+                        <section class="showcase-section">
+                            <div class="member-section">
+                                <div class="card-details-panel text-center">
+                                    <div class="skeleton skeleton-text mx-auto" style="width: 100px; height: 1rem; margin-bottom: 1.5rem;"></div>
+                                    <div class="skeleton skeleton-text mx-auto" style="width: 250px; height: 3.5rem; margin-bottom: 0.5rem;"></div>
+                                    <div class="skeleton skeleton-text mx-auto" style="width: 150px; height: 1.5rem; margin-bottom: 1.5rem;"></div>
+                                    <div class="skeleton skeleton-text mx-auto" style="width: 300px; height: 1.1rem; margin-bottom: 0.5rem;"></div>
+                                    <div class="skeleton skeleton-text mx-auto" style="width: 200px; height: 0.9rem; margin-bottom: 1rem;"></div>
+                                    <div class="skeleton skeleton-text mx-auto" style="width: 120px; height: 2.5rem; margin: 0 auto;"></div>
+                                </div>
+                                <div class="carousel-container flex justify-center items-center">
+                                    <div class="skeleton skeleton-card"></div>
+                                </div>
+                            </div>
+                        </section>
+                    `;
+                    dom.collectionContainer.innerHTML = skeletonGroup + skeletonMember + skeletonMember;
+                },
+                applyUserFilters(cards, sectionId) {
+                    const filters = state.userFilters[sectionId];
+                    if (!filters) return cards;
+
+                    return cards.filter(card => {
+                        if (filters.searchTerm) {
+                            const term = filters.searchTerm.toLowerCase();
+                            const searchableText = `${card.album} ${card.version} ${card.id}`.toLowerCase();
+                            if (!searchableText.includes(term)) return false;
+                        }
+                        if (filters.album !== 'All' && card.album !== filters.album) return false;
+                        if (filters.version !== 'All' && card.version !== filters.version) return false;
+                        
+                        if (filters.tags.size > 0) {
+                            const isNew = (Date.now() - (card.dateAdded?.getTime() || 0)) < 7 * 24 * 60 * 60 * 1000;
+                            for (const tag of filters.tags) {
+                                if (tag === 'new' && !isNew) return false;
+                                if (tag === 'rare' && !card.isRare) return false;
+                                if (tag === 'sale' && card.discount !== 10) return false;
+                                if (tag === 'super-sale' && card.discount !== 20) return false;
+                            }
+                        }
+                        return true;
+                    });
+                },
+                updateFilterSidebarUI() {
+                    const sectionId = state.activeMemberSectionId;
+                    if (!sectionId || !sectionId.startsWith('member-')) {
+                        dom.filterSidebar.classList.remove('visible');
+                        return;
+                    }
+                    
+                    const sectionEl = document.getElementById(sectionId);
+                    const color = sectionEl.dataset.color || 'var(--default-ui-color)';
+                    dom.filterSidebar.style.setProperty('--floating-ui-color', color);
+                    
+                    const lastHyphenIndex = sectionId.lastIndexOf('-');
+                    const groupSlug = sectionId.substring('member-'.length, lastHyphenIndex);
+                    const memberSlug = sectionId.substring(lastHyphenIndex + 1);
+
+                    const groupName = Object.keys(config.colors).find(g => g.toLowerCase().replace(/\s/g, '-') === groupSlug);
+                    const memberName = Object.keys(config.colors[groupName] || {}).find(m => m.toLowerCase().replace(/\s/g, '-') === memberSlug);
+
+                    if (!groupName || !memberName) return;
+
+                    const allMemberCards = state.cards.filter(c => c.group === groupName && c.member === memberName && c.status !== 'sold' && c.status !== 'archived');
+                    
+                    const albums = [...new Set(allMemberCards.map(c => c.album).filter(Boolean))].sort();
+                    const versions = [...new Set(allMemberCards.map(c => c.version).filter(Boolean))].sort();
+
+                    dom.filterForm.album.innerHTML = '<option value="All">All Albums</option>' + albums.map(a => `<option value="${a}">${a}</option>`).join('');
+                    dom.filterForm.version.innerHTML = '<option value="All">All Versions</option>' + versions.map(v => `<option value="${v}">${v}</option>`).join('');
+
+                    const currentFilters = state.userFilters[sectionId];
+                    dom.filterForm.search.value = currentFilters.searchTerm;
+                    dom.filterForm.album.value = currentFilters.album;
+                    dom.filterForm.version.value = currentFilters.version;
+                    dom.filterForm.tags.querySelectorAll('.filter-tag').forEach(tagEl => {
+                        tagEl.classList.toggle('active', currentFilters.tags.has(tagEl.dataset.tag));
+                    });
+                },
+                updateActiveMemberSectionView() {
+                    const sectionId = state.activeMemberSectionId;
+                    if (!sectionId) return;
+
+                    const sectionEl = document.getElementById(sectionId);
+                    
+                    const lastHyphenIndex = sectionId.lastIndexOf('-');
+                    const groupSlug = sectionId.substring('member-'.length, lastHyphenIndex);
+                    const memberSlug = sectionId.substring(lastHyphenIndex + 1);
+                    
+                    const groupName = Object.keys(config.colors).find(g => g.toLowerCase().replace(/\s/g, '-') === groupSlug);
+                    const memberName = Object.keys(config.colors[groupName] || {}).find(m => m.toLowerCase().replace(/\s/g, '-') === memberSlug);
+
+                    if (!groupName || !memberName) return;
+
+                    const originalCards = state.cards.filter(c => c.group === groupName && c.member === memberName && c.status !== 'sold' && c.status !== 'archived');
+                    
+                    const filteredCards = this.applyUserFilters(originalCards, sectionId);
+                    
+                    this.initCarousel(sectionEl, filteredCards, sectionId, groupName);
+                }
+            };
+
+            // --- 7. EVENT HANDLERS ---
+            const handlers = {
+                scrollTimeout: null,
+                arrowRightSVG: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>`,
+                arrowLeftSVG: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>`,
+                init() {
+                    document.body.addEventListener('click', this.handleGlobalClick.bind(this));
+                    dom.adminView.addEventListener('change', this.handleAdminFormChange.bind(this));
+                    dom.adminView.addEventListener('input', this.handleAdminFormInput.bind(this));
+                    dom.floatingNavContainer.addEventListener('click', this.handleNavClick.bind(this));
+                    dom.navToggleBtn.addEventListener('click', this.toggleNav.bind(this));
+                    dom.navToggleBtn.innerHTML = this.arrowRightSVG;
+                    dom.floatingEmptyBtn.addEventListener('click', () => this.confirmEmptyBasket());
+                    
+                    dom.filterBubble.addEventListener('click', () => dom.filterSidebar.classList.add('visible'));
+                    dom.closeFilterBtn.addEventListener('click', () => dom.filterSidebar.classList.remove('visible'));
+                    dom.filterForm.search.addEventListener('input', this.handleUserFilterChange.bind(this));
+                    dom.filterForm.album.addEventListener('change', this.handleUserFilterChange.bind(this));
+                    dom.filterForm.version.addEventListener('change', this.handleUserFilterChange.bind(this));
+                    dom.filterForm.tags.addEventListener('click', this.handleUserFilterChange.bind(this));
+                    
+                    dom.tutorialNextBtn.addEventListener('click', this.handleTutorialNext.bind(this));
+                    dom.tutorialCloseBtn.addEventListener('click', this.closeTutorial.bind(this));
+                },
+                toggleNav() {
+                    dom.floatingNavContent.classList.toggle('is-hidden');
+                    const isHidden = dom.floatingNavContent.classList.contains('is-hidden');
+                    dom.navToggleBtn.innerHTML = isHidden ? this.arrowLeftSVG : this.arrowRightSVG;
+                },
+                handleNavClick(e) {
+                    const navBtn = e.target.closest('a.nav-btn');
+                    if (!navBtn) return;
+
+                    e.preventDefault();
+                    const targetId = navBtn.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+
+                    if (targetElement) {
+                        clearTimeout(this.scrollTimeout);
+                        dom.userView.style.scrollSnapType = 'none';
+                        targetElement.scrollIntoView({ behavior: 'smooth' });
+                        
+                        if (!dom.floatingNavContent.classList.contains('is-hidden')) {
+                            this.toggleNav();
+                        }
+
+                        this.scrollTimeout = setTimeout(() => {
+                            dom.userView.style.scrollSnapType = '';
+                        }, 1000);
+                    }
+                },
+                handleGlobalClick(e) {
+                    const target = e.target;
+
+                    if (dom.filterSidebar.classList.contains('visible') && !dom.filterSidebar.contains(target) && !target.closest('#filter-bubble')) {
+                        dom.filterSidebar.classList.remove('visible');
+                    }
+
+                    const adminCardItem = target.closest('.admin-card-item');
+                    if (adminCardItem && !target.closest('button, [data-action="preview-image"]')) {
+                        this.toggleAdminSelection(adminCardItem.dataset.docId);
+                        return;
+                    }
+
+                    const actionTarget = target.closest('[data-action]');
+                    const action = actionTarget?.dataset.action;
+
+                    if (target.classList.contains('modal-overlay') && target.dataset.dismissable !== 'false') {
+                        const modal = target.closest('.modal-overlay');
+                        if (modal) modal.classList.remove('visible');
+                        return;
+                    }
+                     if (target.classList.contains('close-modal-btn') || target.id === 'confirm-no-btn') {
+                        const modal = target.closest('.modal-overlay');
+                        if (modal) modal.classList.remove('visible');
+                        return;
+                    }
+                    if(target.closest('#checkout-btn')) this.showBasketModal();
+                    if(target.closest('#info-bubble')) this.showInfoModal();
+                    if(target.closest('#admin-panel-bubble')) this.handleAdminBubbleClick();
+                    
+                    const cardWrapper = target.closest('.carousel-card');
+                    if (cardWrapper) {
+                        if (target.closest('.card-flip-overlay')) {
+                            cardWrapper.classList.toggle('is-flipped');
+                        } else if (target.closest('.carousel-card-front .card-click-overlay')) {
+                            this.toggleBasketItem(cardWrapper, cardWrapper.dataset.docId);
+                        }
+                    }
+
+                    if (target.closest('.add-to-basket-main-btn')) this.toggleBasketItem(target, target.dataset.docId);
+                    
+                    if (target.closest('[data-action="empty-basket"]') && target.closest('#basket-modal-overlay')) {
+                        this.confirmEmptyBasket();
+                    }
+
+                    if (!action) return;
+                    const docId = actionTarget.closest('[data-doc-id]')?.dataset.docId;
+                    switch(action) {
+                        case 'logout': this.logout(); break;
+                        case 'add-card': this.showAdminForm(); break;
+                        case 'edit-card': this.showAdminForm(docId); break;
+                        case 'delete-card': this.confirmDeleteCard(docId); break;
+                        case 'edit-content': this.showContentEditor(); break;
+                        case 'preview-image': this.showImagePreview(actionTarget.src); break;
+                        case 'unselect-all': this.unselectAllAdminCards(); break;
+                        case 'bulk-update': this.handleBulkUpdate(actionTarget); break;
+                        case 'toggle-rare': this.handleBulkToggleRare(); break;
+                        case 'bulk-archive': this.confirmBulkArchiveAction('archive'); break;
+                        case 'bulk-delete': this.confirmBulkDelete(); break;
+                        case 'reset-filters': this.resetUserFilters(); break;
+                    }
+                },
+                toggleBasketItem(targetElement, docId) {
+                    if (!docId) return;
+                    const card = state.cards.find(c => c.docId === docId);
+                    if (!card || card.status !== 'available') return;
+                    const basketIndex = state.basket.findIndex(item => item.docId === docId);
+                    if (basketIndex > -1) {
+                        state.basket.splice(basketIndex, 1);
+                    } else {
+                        state.basket.push(card);
+                        this.playAddToBasketAnimation(targetElement, card.image);
+                    }
+                    ui.updateFloatingBasket();
+                    ui.updateCardUIState(docId);
+                },
+                playAddToBasketAnimation(target, imageUrl) {
+                    const rect = target.getBoundingClientRect();
+                    const basketRect = dom.floatingBasket.getBoundingClientRect();
+                    const flyingCard = document.createElement('img');
+                    flyingCard.src = imageUrl;
+                    flyingCard.className = 'flying-card';
+                    flyingCard.style.top = `${rect.top}px`;
+                    flyingCard.style.left = `${rect.left}px`;
+                    document.body.appendChild(flyingCard);
+                    
+                    requestAnimationFrame(() => {
+                        flyingCard.style.top = `${basketRect.top + basketRect.height / 2}px`;
+                        flyingCard.style.left = `${basketRect.left + basketRect.width / 2}px`;
+                        flyingCard.style.transform = 'scale(0.2)';
+                        flyingCard.style.opacity = '0.5';
+                    });
+
+                    setTimeout(() => flyingCard.remove(), 700);
+                },
+                handleAdminBubbleClick() {
+                    if (state.user) {
+                        state.isAdminView = true;
+                        ui.render();
+                    } else {
+                        this.showLoginModal();
+                    }
+                },
+                async logout() {
+                    try {
+                        await services.logout();
+                        utils.showMessageBox('Logged out successfully.', 'success');
+                    } catch (error) {
+                        console.error("Logout failed:", error);
+                        utils.showMessageBox('Logout failed.', 'error');
+                    }
+                },
+                handleAdminFormChange(e) {
+                    const filterEl = e.target.closest('[data-filter]');
+                    const sortEl = e.target.closest('[data-sort]');
+                    if(filterEl) {
+                        state.adminFilters[filterEl.dataset.filter] = filterEl.value;
+                        if(filterEl.dataset.filter === 'group') ui.updateAdminMemberFilter();
+                        ui.applyAdminFiltersAndSort();
+                    }
+                    if(sortEl) {
+                        state.adminSort[sortEl.dataset.sort] = sortEl.value;
+                        ui.applyAdminFiltersAndSort();
+                    }
+                },
+                handleAdminFormInput(e) {
+                    const filterEl = e.target.closest('[data-filter="searchTerm"]');
+                    if(filterEl) {
+                        state.adminFilters.searchTerm = filterEl.value;
+                        ui.applyAdminFiltersAndSort();
+                    }
+                },
+                toggleAdminSelection(docId) {
+                    const checkbox = dom.adminView.querySelector(`.admin-card-item[data-doc-id="${docId}"] .bulk-checkbox`);
+                    if (state.adminSelectedIds.has(docId)) {
+                        state.adminSelectedIds.delete(docId);
+                        if(checkbox) checkbox.checked = false;
+                    } else {
+                        state.adminSelectedIds.add(docId);
+                        if(checkbox) checkbox.checked = true;
+                    }
+                    ui.renderAdminList(state.cards);
+                    ui.applyAdminFiltersAndSort();
+                },
+                unselectAllAdminCards() {
+                    state.adminSelectedIds.clear();
+                    ui.applyAdminFiltersAndSort();
+                },
+                handleBulkUpdate(button) {
+                    const { field, value } = button.dataset;
+                    let updateValue = value;
+
+                    if (field === 'discount') {
+                        updateValue = Number(value);
+                    }
+
+                    services.bulkUpdate(state.adminSelectedIds, field, updateValue)
+                        .then(() => {
+                            utils.showMessageBox(`Bulk update successful.`, 'success');
+                            ui.applyAdminFiltersAndSort();
+                        })
+                        .catch(err => {
+                            console.error("Bulk update failed:", err);
+                            utils.showMessageBox(`Bulk update failed.`, 'error');
+                        });
+                },
+                handleBulkToggleRare() {
+                    if (state.adminSelectedIds.size === 0) {
+                        utils.showMessageBox('No cards selected for toggling rarity.', 'info');
+                        return;
+                    }
+
+                    const promises = [];
+                    state.adminSelectedIds.forEach(docId => {
+                        const card = state.cards.find(c => c.docId === docId);
+                        if (card) {
+                            const newIsRare = !card.isRare;
+                            promises.push(services.bulkUpdate([docId], 'isRare', newIsRare));
+                        }
+                    });
+
+                    Promise.all(promises)
+                        .then(() => {
+                            utils.showMessageBox(`Bulk rarity toggled successfully!`, 'success');
+                            ui.applyAdminFiltersAndSort();
+                        })
+                        .catch(err => {
+                            console.error("Bulk rarity toggle failed:", err);
+                            utils.showMessageBox(`Bulk rarity toggle failed.`, 'error');
+                        });
+                },
+                confirmBulkArchiveAction(actionType) {
+                    const count = state.adminSelectedIds.size;
+                    const verb = actionType === 'archive' ? 'archive' : 'delete';
+                    this.showConfirmationModal(`Are you sure you want to ${verb} ${count} selected card(s)? This action cannot be undone.`, (result) => {
+                        if (result === 'yes') {
+                            const updateField = actionType === 'archive' ? 'status' : 'delete';
+                            const updateValue = actionType === 'archive' ? 'archived' : null;
+                            
+                            services.bulkUpdate(state.adminSelectedIds, updateField, updateValue)
+                               .then(() => {
+                                    utils.showMessageBox(`${count} card(s) ${verb}d.`, 'success');
+                                    state.adminSelectedIds.clear();
+                                    ui.applyAdminFiltersAndSort();
+                                })
+                               .catch(err => {
+                                    console.error(`Bulk ${verb} failed:`, err);
+                                    utils.showMessageBox(`Bulk ${verb} failed.`, 'error');
+                                });
+                        }
+                    });
+                },
+                confirmDeleteCard(docId) {
+                    this.showConfirmationModal('Are you sure you want to permanently delete this card?', async (result) => {
+                        if (result === 'yes') {
+                            try {
+                                await services.deleteCard(docId);
+                                utils.showMessageBox('Card deleted successfully.', 'success');
+                            } catch (error) {
+                                console.error('Error deleting card:', error);
+                                utils.showMessageBox('Error deleting card.', 'error');
+                            }
+                        }
+                    });
+                },
+                confirmEmptyBasket() {
+                    this.showConfirmationModal('Are you sure you want to empty your basket?', (result) => {
+                        if (result === 'yes') {
+                            const itemsToRemove = [...state.basket];
+                            state.basket = [];
+                            itemsToRemove.forEach(item => ui.updateCardUIState(item.docId));
+                            ui.updateFloatingBasket();
+                            if (dom.modals.basket.classList.contains('visible')) {
+                                this.showBasketModal();
+                            }
+                        }
+                    });
+                },
+                checkDisclaimer() {
+                    if (localStorage.getItem('disclaimerAcknowledged') === 'true') {
+                        this.startTutorial();
+                    } else {
+                        this.showDisclaimerModal();
+                    }
+                },
+                showDisclaimerModal() {
+                    const disclaimerText = this.getDisclaimerText();
+                    const content = `
+                        <div class="modal-content-box">
+                            <div class="modal-header"><h2 class="text-2xl font-bold">Disclaimer</h2></div>
+                            <div class="modal-body text-left">${disclaimerText}</div>
+                            <div class="modal-footer p-4 flex justify-end gap-4 border-t border-gray-700">
+                                <button id="refuse-btn" class="bg-red-600 text-white py-2 px-6 rounded-full">Refuse</button>
+                                <button id="acknowledge-btn" class="bg-green-600 text-white py-2 px-6 rounded-full">Acknowledge</button>
+                            </div>
+                        </div>`;
+                    ui.openModal('disclaimer', content, false);
+                    dom.userView.classList.add('blurred');
+                    dom.modals.disclaimer.querySelector('#acknowledge-btn').addEventListener('click', () => {
+                        localStorage.setItem('disclaimerAcknowledged', 'true');
+                        ui.closeModal('disclaimer');
+                        dom.userView.classList.remove('blurred');
+                        this.startTutorial();
+                    });
+                    dom.modals.disclaimer.querySelector('#refuse-btn').addEventListener('click', () => {
+                        window.location.href = 'https://www.google.com';
+                    });
+                },
+                getDisclaimerText() {
+                    const dbText = state.siteContent.disclaimerText;
+                    return dbText || `
+                        <h3 class="text-lg font-bold text-red-400 mb-2">This is NOT a Shop!</h3>
+                        <p class="mb-4">This website is for displaying a private photocard collection. Its purpose is to make it easier for others to see what is available for trade or sale. This is done by me as a private person, not for commercial gain.</p>
+                        <strong class="text-white">Condition of Cards:</strong>
+                        <p class="mb-4">Even though all cards are treated with the utmost care and are kept in clean sleeves at all times, small defects like scratches or little dents can exist from manufacturing or shipping. Highly sensitive people should refrain from buying.</p>
+                        <strong class="text-white">Private Sale Policy:</strong>
+                        <p>As a private person, I do not offer refunds, returns, or any kind of warranties.</p>
+                    `;
+                },
+                showLoginModal() {
+                    const content = `
+                        <div class="modal-content-box login-modal">
+                            <div class="modal-header flex justify-between items-center"><h2 class="text-2xl font-bold">Admin Login</h2><button class="close-modal-btn text-2xl">&times;</button></div>
+                            <div class="modal-body">
+                                <form id="login-form">
+                                    <div class="form-group"><label>Email:</label><input type="email" name="email" required></div>
+                                    <div class="form-group"><label>Password:</label><input type="password" name="password" required></div>
+                                    <p class="login-error-message text-red-500 text-sm mb-4 h-5"></p>
+                                    <button type="submit" class="bg-blue-600 text-white py-2 px-4 rounded-full w-full">Login</button>
+                                </form>
+                            </div>
+                        </div>`;
+                    ui.openModal('login', content);
+                    dom.modals.login.querySelector('#login-form').addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const form = e.target;
+                        const errorEl = form.querySelector('.login-error-message');
+                        try {
+                            await services.login(form.email.value, form.password.value);
+                            ui.closeModal('login');
+                        } catch (error) {
+                            errorEl.textContent = 'Invalid email or password.';
+                            console.error("Login failed:", error);
+                        }
+                    });
+                },
+                showInfoModal() {
+                    const content = `
+                        <div class="modal-content-box info-modal">
+                            <div class="modal-header flex justify-between items-center"><h2 class="text-2xl font-bold">Selling Process Info</h2><button class="close-modal-btn text-2xl">&times;</button></div>
+                            <div class="modal-body info-modal-content">${state.siteContent.infoText || ''} ${this.getDisclaimerText()}</div>
+                        </div>`;
+                    ui.openModal('info', content);
+                },
+                showImagePreview(src) {
+                    const content = `
+                        <div class="modal-content-box max-w-lg relative">
+                            <button class="close-modal-btn absolute top-2 right-4 text-white text-4xl z-10">&times;</button>
+                            <img src="${src}" class="w-full h-auto rounded-lg">
+                        </div>`;
+                    ui.openModal('imagePreview', content);
+                },
+                showConfirmationModal(message, onConfirm, type = 'confirm', customButtons = null) {
+                    let buttonsHtml = '';
+                    if (type === 'confirm') {
+                        buttonsHtml = `
+                            <button id="confirm-yes-btn" class="bg-red-600 text-white py-2 px-6 rounded-full">Yes</button>
+                            <button id="confirm-no-btn" class="bg-gray-600 text-white py-2 px-6 rounded-full">No</button>
+                        `;
+                    } else if (type === 'yesno' && customButtons) {
+                         buttonsHtml = `
+                            <button id="confirm-yes-btn" class="bg-green-600 text-white py-2 px-6 rounded-full">Yes</button>
+                            <button id="confirm-no-btn" class="bg-red-600 text-white py-2 px-6 rounded-full">No</button>
+                        `;
+                    }
+                    
+                    const content = `
+                        <div class="modal-content-box">
+                            <div class="modal-header"><h2 class="text-2xl font-bold">Confirmation</h2></div>
+                            <div class="modal-body text-center">
+                                <p class="mb-6 text-lg">${message}</p>
+                                <div class="flex justify-center gap-4">
+                                    ${buttonsHtml}
+                                </div>
+                            </div>
+                        </div>`;
+                    ui.openModal('confirmation', content);
+                    dom.modals.confirmation.querySelector('#confirm-yes-btn').addEventListener('click', () => {
+                        onConfirm('yes');
+                        ui.closeModal('confirmation');
+                    }, { once: true });
+                    dom.modals.confirmation.querySelector('#confirm-no-btn').addEventListener('click', () => {
+                        onConfirm('no');
+                        ui.closeModal('confirmation');
+                    }, { once: true });
+                },
+                showBasketModal() {
+                    const generateMessage = () => {
+                        const country = dom.modals.basket.querySelector('#shipping-country').value;
+                        const shipping = dom.modals.basket.querySelector('#shipping-method').value;
+                        const payment = dom.modals.basket.querySelector('#payment-method').value;
+                        let message = "Hello! I would like to buy the following card(s):\n\n";
+                        let totalPrice = 0;
+                        let cardList = state.basket.map(item => {
+                            const price = utils.calculateDiscountedPrice(item.price, item.discount);
+                            totalPrice += price;
+                            return `${item.id}\n${item.member} - ${item.album}\n${item.version}\n€${price.toFixed(2)}`;
+                        }).join('\n\n');
+                        message += `${cardList}\n\n------------------------------\n`;
+                        message += `TOTAL (${state.basket.length} cards): €${totalPrice.toFixed(2)} (excl. shipping)\n\n--- Shipping & Payment ---\nShip to: ${country || 'Please specify'}\nShipping Method: ${shipping}\nPayment Method: ${payment}\n`;
+                        dom.modals.basket.querySelector('#generated-message').value = message;
+                    };
+                    const basketItemsHtml = state.basket.length > 0 ? state.basket.map(item => `
+                        <div class="basket-item">
+                            <img src="${item.image}" class="basket-item-img" onerror="this.onerror=null;this.src='https://placehold.co/60x93/121212/ff4757?text=Img';">
+                            <div class="basket-item-info">
+                                <p class="font-semibold">${item.member} - ${item.album}</p>
+                                <p class="text-sm text-gray-400">€${utils.calculateDiscountedPrice(item.price, item.discount).toFixed(2)}</p>
+                            </div>
+                            <button class="remove-item-btn" data-doc-id="${item.docId}">&times;</button>
+                        </div>`).join('') : '<p class="text-center text-gray-400">Your basket is empty.</p>';
+                    const content = `
+                        <div class="modal-content-box basket-modal">
+                            <div class="modal-header flex justify-between items-center">
+                                <h2 class="text-2xl font-bold">Your Basket</h2>
+                                <div>
+                                    ${state.basket.length > 0 ? '<button data-action="empty-basket" class="text-sm bg-red-800 px-3 py-1 rounded-full">Empty Basket</button>' : ''}
+                                    <button class="close-modal-btn text-2xl ml-4">&times;</button>
+                                </div>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group"><label>Ship to (Country):</label><input type="text" id="shipping-country" list="country-suggestions" placeholder="e.g., Germany, USA, Japan"><datalist id="country-suggestions">${(state.metadata.countries || []).map(c => `<option value="${c}"></option>`).join('')}</datalist></div>
+                                <div class="grid grid-cols-2 gap-4"><div class="form-group"><label>Shipping Method:</label><select id="shipping-method"><option>Cheapest</option><option>Tracked</option><option>Insured</option></select></div><div class="form-group"><label>Payment Method:</label><select id="payment-method"><option>PayPal F&F</option><option>Wise</option><option>Bank Transfer (EU)</option></select></div></div>
+                                <div class="form-group"><label>Your Message for Instagram:</label><textarea id="generated-message" readonly></textarea></div>
+                                <div class="flex justify-between items-center gap-4"><a href="https://www.instagram.com/bananatrades877/" target="_blank" rel="noopener noreferrer" class="text-center w-full bg-gray-600 text-white py-2 px-4 rounded-full">Open Instagram</a><button id="copy-message-btn" class="w-full bg-blue-500 text-white py-2 px-4 rounded-full">Copy Message</button></div>
+                                <hr class="my-4 border-gray-700"><div id="basket-items-container">${basketItemsHtml}</div>
+                            </div>
+                        </div>`;
+                    ui.openModal('basket', content, false);
+                    const modalBody = dom.modals.basket.querySelector('.modal-body');
+                    modalBody.addEventListener('input', generateMessage);
+                    modalBody.querySelector('#copy-message-btn').addEventListener('click', () => {
+                        const country = modalBody.querySelector('#shipping-country').value;
+                        if (!country.trim()) {
+                            utils.showMessageBox('Please specify the shipping country.', 'error');
+                            return;
+                        }
+                        const textarea = modalBody.querySelector('#generated-message');
+                        textarea.select();
+                        document.execCommand('copy');
+                        utils.showMessageBox('Message copied to clipboard!', 'success');
+                    });
+                    modalBody.querySelector('#basket-items-container').addEventListener('click', e => {
+                        const removeBtn = e.target.closest('.remove-item-btn');
+                        if (removeBtn) {
+                            this.toggleBasketItem(removeBtn, removeBtn.dataset.docId);
+                            this.showBasketModal();
+                        }
+                    });
+                    generateMessage();
+                },
+                showAdminForm(docId = null) {
+                    const card = docId ? state.cards.find(c => c.docId === docId) : {};
+                    const isEditing = !!docId;
+                    const content = `
+                        <div class="modal-content-box admin-form-modal">
+                            <div class="modal-header flex justify-between items-center"><h2 class="text-2xl font-bold">${isEditing ? `Edit Card: ${card.id || ''}` : 'Add New Card'}</h2><button class="close-modal-btn text-2xl">&times;</button></div>
+                            <div class="modal-body">
+                                <form id="admin-card-form" class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
+                                    <div class="form-group"><label>Group:</label><select name="group" required><option value="">Select Group</option>${(state.metadata.groupOrder || []).map(g => `<option value="${g}" ${card.group === g ? 'selected' : ''}>${g}</option>`).join('')}</select></div>
+                                    <div class="form-group"><label>Member:</label><select name="member" required></select></div>
+                                    <div class="form-group col-span-full"><label>Album:</label><input type="text" name="album" required value="${card.album || ''}" list="album-suggestions"><datalist id="album-suggestions"></datalist></div>
+                                    <div class="form-group col-span-full"><label>Version (Description):</label><input type="text" name="description" required value="${card.version || ''}" list="version-suggestions"><datalist id="version-suggestions"></datalist></div>
+                                    <div class="form-group"><label>Price (€):</label><input type="number" name="price" step="0.01" required value="${card.price || ''}"></div>
+                                    <div class="form-group"><label>Discount (%):</label><select name="discount">${[0, 10, 20].map(d => `<option value="${d}" ${card.discount == d ? 'selected' : ''}>${d > 0 ? d + '%' : 'None'}</option>`).join('')}</select></div>
+                                    <div class="form-group"><label>Status:</label><select name="status">${['available', 'reserved', 'sold', 'archived'].map(s => `<option value="${s}" ${card.status === s ? 'selected' : ''}>${s.charAt(0).toUpperCase() + s.slice(1)}</option>`).join('')}</select></div>
+                                    <div class="form-group flex items-center"><input type="checkbox" name="isRare" class="mr-2 h-4 w-4" ${card.isRare ? 'checked' : ''}><label class="mb-0">Is Rare?</label></div>
+                                    <div class="form-group col-span-full"><label>Front Image URL:</label><input type="url" name="imageUrl" required value="${card.image || ''}"></div>
+                                    <div class="form-group col-span-full"><label>Back Image URL:</label><input type="url" name="backImage" required value="${card.backImage || ''}"></div>
+                                    <div class="form-group col-span-full mt-2 flex gap-4">
+                                        <button type="submit" name="save" class="bg-green-600 text-white py-2 px-4 rounded-full w-full">Save Card</button>
+                                        ${!isEditing ? `<button type="submit" name="save_add" class="bg-blue-600 text-white py-2 px-4 rounded-full w-full">Save & Add Another</button>` : ''}
+                                    </div>
+                                </form>
+                            </div>
+                        </div>`;
+                    ui.openModal('adminForm', content, false);
+                    const form = dom.modals.adminForm.querySelector('#admin-card-form');
+                    const groupSelect = form.querySelector('[name="group"]');
+                    const memberSelect = form.querySelector('[name="member"]');
+                    const albumInput = form.querySelector('[name="album"]');
+                    const albumDatalist = form.querySelector('#album-suggestions');
+                    const versionInput = form.querySelector('[name="description"]');
+                    const versionDatalist = form.querySelector('#version-suggestions');
+                    const populateAlbumSuggestions = () => {
+                        albumDatalist.innerHTML = '';
+                        const group = groupSelect.value;
+                        const member = memberSelect.value;
+                        if (!group || !member || !state.metadata.albums?.[group]) return;
+                        const groupAlbums = state.metadata.albums[group].group_albums || {};
+                        const memberAlbums = state.metadata.albums[group][member] || {};
+                        const allAlbumNames = new Set([...Object.keys(groupAlbums), ...Object.keys(memberAlbums)]);
+                        albumDatalist.innerHTML = [...allAlbumNames].map(name => `<option value="${name}"></option>`).join('');
+                    };
+                    const populateVersionSuggestions = () => {
+                        versionDatalist.innerHTML = '';
+                        const group = groupSelect.value;
+                        const member = memberSelect.value;
+                        const albumName = albumInput.value;
+                        if (!group || !member || !albumName || !state.metadata.albums?.[group]) return;
+                        const groupAlbums = state.metadata.albums[group].group_albums || {};
+                        const memberAlbums = state.metadata.albums[group][member] || {};
+                        let versions = [];
+                        if (groupAlbums[albumName]?.versions) versions = groupAlbums[albumName].versions;
+                        else if (memberAlbums[albumName]?.versions) versions = memberAlbums[albumName].versions;
+                        versionDatalist.innerHTML = versions.map(name => `<option value="${name}"></option>`).join('');
+                    };
+                    const updateMembersAndSuggestions = (selectedMember = '') => {
+                        const members = (state.metadata.memberOrder || {})[groupSelect.value] || [];
+                        memberSelect.innerHTML = `<option value="">Select Member</option>` + members.map(m => `<option value="${m}" ${selectedMember === m ? 'selected' : ''}>${m}</option>`).join('');
+                        if (selectedMember) memberSelect.value = selectedMember;
+                        populateAlbumSuggestions();
+                        populateVersionSuggestions();
+                    };
+                    groupSelect.addEventListener('change', () => updateMembersAndSuggestions());
+                    memberSelect.addEventListener('change', () => {
+                        populateAlbumSuggestions();
+                        versionInput.value = '';
+                        populateVersionSuggestions();
+                    });
+                    albumInput.addEventListener('input', populateVersionSuggestions);
+                    updateMembersAndSuggestions(isEditing ? card.member : '');
+                    if (isEditing) populateVersionSuggestions();
+                    form.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const submitter = e.submitter?.name;
+                        const formData = new FormData(form);
+                        const cardData = {
+                            group: formData.get('group'), member: formData.get('member'), album: formData.get('album'),
+                            description: formData.get('description'), price: parseFloat(formData.get('price')),
+                            discount: parseInt(formData.get('discount')), status: formData.get('status'),
+                            imageUrl: formData.get('imageUrl'), backImage: formData.get('backImage'),
+                            isRare: formData.get('isRare') === 'on',
+                        };
+                        try {
+                            await services.saveCard(cardData, docId);
+                            utils.showMessageBox(`Card ${isEditing ? 'updated' : 'added'} successfully!`, 'success');
+                            if (submitter === 'save_add' && !isEditing) {
+                                const savedGroup = formData.get('group');
+                                const savedMember = formData.get('member');
+                                form.reset();
+                                groupSelect.value = savedGroup;
+                                updateMembersAndSuggestions(savedMember);
+                                albumInput.focus();
+                            } else {
+                                ui.closeModal('adminForm');
+                            }
+                        } catch (error) {
+                            console.error("Error saving card:", error);
+                            utils.showMessageBox("Error saving card.", 'error');
+                        }
+                    });
+                },
+                showContentEditor() {
+                    const groupSettingsHtml = (state.metadata.groupOrder || []).map(groupName => `
+                        <div class="form-group p-4 border border-gray-700 rounded-lg mb-4">
+                            <h4 class="text-lg font-bold mb-2 text-white">${groupName}</h4>
+                            <label class="text-sm text-gray-400">Subtitle:</label>
+                            <textarea name="groupSubtitles.${groupName}" rows="1" class="w-full bg-gray-800 p-2 rounded mb-2 text-white">${(state.siteContent.groupSubtitles || {})[groupName] || ''}</textarea>
+                            <label class="text-sm text-gray-400">Banner URL:</label>
+                            <input type="url" name="groupBanners.${groupName}" class="w-full bg-gray-800 p-2 rounded text-white" value="${(state.siteContent.groupBanners || {})[groupName] || ''}" placeholder="https://example.com/banner.jpg">
+                        </div>`).join('');
+                    
+                    const memberQuotesHtml = (state.metadata.groupOrder || []).map(groupName => {
+                        const members = (state.metadata.memberOrder || {})[groupName] || [];
+                        if (members.length === 0) return '';
+                        const memberInputs = members.map(memberName => `
+                            <div class="form-group">
+                                <label class="text-sm text-gray-400">${memberName}'s Quote:</label>
+                                <textarea name="memberQuotes.${groupName}.${memberName}" rows="2" class="w-full bg-gray-800 p-2 rounded text-white">${(state.siteContent.memberQuotes?.[groupName]?.[memberName] || '')}</textarea>
+                            </div>
+                        `).join('');
+                        return `<div class="p-4 border border-gray-700 rounded-lg mb-4">
+                                    <h4 class="text-lg font-bold mb-2 text-white">${groupName} Quotes</h4>
+                                    ${memberInputs}
+                                </div>`;
+                    }).join('');
+
+                    const content = `
+                        <div class="modal-content-box content-editor-modal">
+                            <div class="modal-header flex justify-between items-center"><h2 class="text-2xl font-bold">Edit Site Content</h2><button class="close-modal-btn text-2xl">&times;</button></div>
+                            <div class="modal-body">
+                                <form id="site-content-form">
+                                    <div class="form-group"><label>Site Title:</label><input type="text" name="title" value="${state.siteContent.title || ''}"></div>
+                                    <div class="form-group"><label>Site Subtitle:</label><textarea name="subtitle" rows="2">${state.siteContent.subtitle || ''}</textarea></div>
+                                    <h3 class="text-xl font-bold mt-4 mb-2">Group Settings</h3><div>${groupSettingsHtml}</div>
+                                    <h3 class="text-xl font-bold mt-4 mb-2">Member Quotes</h3><div>${memberQuotesHtml}</div>
+                                    <div class="form-group"><label>Info Text (HTML allowed):</label><textarea name="infoText" rows="10">${state.siteContent.infoText || ''}</textarea></div>
+                                    <div class="form-group"><label>Disclaimer Text (HTML allowed):</label><textarea name="disclaimerText" rows="10">${state.siteContent.disclaimerText || ''}</textarea></div>
+                                    <button type="submit" class="bg-green-600 text-white py-2 px-4 rounded-full w-full">Save Site Content</button>
+                                </form>
+                            </div>
+                        </div>`;
+                    ui.openModal('contentEditor', content, false);
+                    dom.modals.contentEditor.querySelector('#site-content-form').addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const updatedContent = {
+                            title: e.target.title.value, subtitle: e.target.subtitle.value, infoText: e.target.infoText.value,
+                            disclaimerText: e.target.disclaimerText.value,
+                            groupSubtitles: {}, groupBanners: {},
+                            memberQuotes: {}
+                        };
+                        (state.metadata.groupOrder || []).forEach(groupName => {
+                            updatedContent.groupSubtitles[groupName] = e.target[`groupSubtitles.${groupName}`].value;
+                            updatedContent.groupBanners[groupName] = e.target[`groupBanners.${groupName}`].value;
+                            
+                            updatedContent.memberQuotes[groupName] = {};
+                            const members = (state.metadata.memberOrder || {})[groupName] || [];
+                            members.forEach(memberName => {
+                                const quoteValue = e.target[`memberQuotes.${groupName}.${memberName}`].value;
+                                if (quoteValue) {
+                                    updatedContent.memberQuotes[groupName][memberName] = quoteValue;
+                                }
+                            });
+                        });
+                        try {
+                            await services.saveSiteContent(updatedContent);
+                            utils.showMessageBox('Site content updated!', 'success');
+                            ui.closeModal('contentEditor');
+                        } catch (error) {
+                            console.error("Error saving site content:", error);
+                            utils.showMessageBox('Error saving content.', 'error');
+                        }
+                        ui.render();
+                    });
+                },
+                
+                handleUserFilterChange(e) {
+                    const sectionId = state.activeMemberSectionId;
+                    if (!sectionId) return;
+
+                    const filters = state.userFilters[sectionId];
+                    const target = e.target;
+
+                    if (target.name === 'searchTerm' || target.name === 'album' || target.name === 'version') {
+                        filters[target.name] = target.value;
+                    } else if (target.classList.contains('filter-tag')) {
+                        const tag = target.dataset.tag;
+                        if (filters.tags.has(tag)) {
+                            filters.tags.delete(tag);
+                        } else {
+                            filters.tags.add(tag);
+                        }
+                        target.classList.toggle('active');
+                    }
+
+                    ui.updateActiveMemberSectionView();
+                },
+                resetUserFilters() {
+                    const sectionId = state.activeMemberSectionId;
+                    if (!sectionId) return;
+
+                    state.userFilters[sectionId] = {
+                        searchTerm: '',
+                        album: 'All',
+                        version: 'All',
+                        tags: new Set()
+                    };
+                    
+                    ui.updateFilterSidebarUI();
+                    ui.updateActiveMemberSectionView();
+                },
+                startTutorial() {
+                    if (localStorage.getItem('photocard_tutorial_seen_v2') === 'true') {
+                        return;
+                    }
+                    this.showTutorialStep(1);
+                },
+                showTutorialStep(step) {
+                    dom.tutorialOverlay.classList.add('visible');
+                    dom.userView.classList.add('tutorial-active');
+                    
+                    const bubble = dom.tutorialBubble;
+                    
+                    bubble.style.opacity = '0';
+                    bubble.style.visibility = 'hidden';
+                    bubble.style.top = '-1000px';
+                    bubble.style.left = '-1000px';
+                    bubble.classList.add('visible');
+
+                    dom.tutorialCloneContainer.innerHTML = '';
+
+                    let targetEl;
+                    if (step === 1) {
+                        targetEl = dom.infoBubble;
+                        dom.tutorialContent.textContent = "Click here to learn about the buying procedure and rules.";
+                        dom.tutorialNextBtn.style.display = 'block';
+                        dom.tutorialCloseBtn.textContent = 'Skip';
+                    } else if (step === 2) {
+                        targetEl = dom.filterBubble;
+                        dom.tutorialContent.textContent = "You can filter and look for specific cards / albums using the filter function. Keep in mind that the filters are member specific and don't carry on to other members.";
+                        dom.tutorialNextBtn.style.display = 'none';
+                        dom.tutorialCloseBtn.textContent = 'Got it!';
+                    }
+
+                    if (!targetEl) return;
+                    
+                    const targetRect = targetEl.getBoundingClientRect();
+                    const cloneEl = targetEl.cloneNode(true);
+                    cloneEl.style.top = `${targetRect.top}px`;
+                    cloneEl.style.left = `${targetRect.left}px`;
+                    cloneEl.style.width = `${targetRect.width}px`;
+                    cloneEl.style.height = `${targetRect.height}px`;
+                    cloneEl.style.margin = '0';
+                    dom.tutorialCloneContainer.appendChild(cloneEl);
+                    
+                    setTimeout(() => {
+                        this.positionTutorialBubble(cloneEl);
+                        bubble.style.visibility = 'visible';
+                        bubble.style.opacity = '1';
+                    }, 50);
+                },
+                positionTutorialBubble(targetEl) {
+                    const bubble = dom.tutorialBubble;
+                    const pointer = bubble.querySelector('.tutorial-bubble-pointer');
+                    const targetRect = targetEl.getBoundingClientRect();
+                    const bubbleRect = bubble.getBoundingClientRect();
+                    const pointerSize = 15;
+                    const margin = 10;
+
+                    let top, left, pointerClass;
+
+                    if (targetRect.left - bubbleRect.width - pointerSize > margin) {
+                        left = targetRect.left - bubbleRect.width - pointerSize;
+                        top = targetRect.top + (targetRect.height / 2) - (bubbleRect.height / 2);
+                        pointerClass = 'right';
+                    } 
+                    else if (targetRect.top - bubbleRect.height - pointerSize > margin) {
+                        left = targetRect.left + (targetRect.width / 2) - (bubbleRect.width / 2);
+                        top = targetRect.top - bubbleRect.height - pointerSize;
+                        pointerClass = 'bottom';
+                    }
+                    else if (targetRect.right + bubbleRect.width + pointerSize < window.innerWidth - margin) {
+                        left = targetRect.right + pointerSize;
+                        top = targetRect.top + (targetRect.height / 2) - (bubbleRect.height / 2);
+                        pointerClass = 'left';
+                    }
+                    else {
+                        left = targetRect.left + (targetRect.width / 2) - (bubbleRect.width / 2);
+                        top = targetRect.bottom + pointerSize;
+                        pointerClass = 'top';
+                    }
+                    
+                    top = Math.max(margin, Math.min(top, window.innerHeight - bubbleRect.height - margin));
+                    left = Math.max(margin, Math.min(left, window.innerWidth - bubbleRect.width - margin));
+
+                    bubble.style.top = `${top}px`;
+                    bubble.style.left = `${left}px`;
+                    pointer.className = `tutorial-bubble-pointer ${pointerClass}`;
+                },
+                handleTutorialNext() {
+                    this.showTutorialStep(2);
+                },
+                closeTutorial() {
+                    const bubble = dom.tutorialBubble;
+                    bubble.style.opacity = '0';
+                    setTimeout(() => {
+                        bubble.classList.remove('visible');
+                        bubble.style.visibility = 'hidden';
+                        dom.tutorialOverlay.classList.remove('visible');
+                        dom.userView.classList.remove('tutorial-active');
+                        dom.tutorialCloneContainer.innerHTML = '';
+                    }, 300);
+                    localStorage.setItem('photocard_tutorial_seen_v2', 'true');
+                }
+            };
+
+            // --- 8. APP INITIALIZATION ---
+            const App = {
+                init() {
+                    console.log("Initializing K-Pop Gallery App...");
+                    services.initFirebase();
+                    handlers.init();
+                    services.initListeners();
+                }
+            };
+            App.init();
+        })(window);
+    </script>
+</body>
+</html>
