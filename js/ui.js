@@ -5,21 +5,40 @@ import { utils } from "./utils.js";
 // --- 6. UI RENDERING MODULE ---
 export const ui = {
     render() {
+        // This function might be called multiple times as data loads.
+        // It will only do a full render once all data is ready.
+        
         dom.userView.style.display = state.isAdminView ? 'none' : 'block';
         dom.adminView.style.display = state.isAdminView ? 'block' : 'none';
+
         if (state.isAdminView) {
             this.renderAdminView();
         } else {
-            if (!state.isDataReady.cards) {
-                this.renderSkeletonLoader();
-            } else {
+            // Check if all data sources are ready
+            if (Object.values(state.isDataReady).every(Boolean)) {
+                // All data is loaded, render the full user view
                 this.renderUserView();
+            } else {
+                // Still loading, render the skeleton
+                this.renderSkeletonLoader();
             }
         }
     },
     renderUserView() {
         dom.siteTitle.textContent = state.siteContent.title;
         dom.siteSubtitle.innerHTML = state.siteContent.subtitle.replace(/\n/g, '<br>');
+
+        // --- New Cards Counter Logic ---
+        const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+        const newCards = state.cards.filter(card => card.dateAdded > twoWeeksAgo);
+        const counterEl = document.getElementById('new-cards-counter');
+        if (newCards.length > 0) {
+            counterEl.textContent = `${newCards.length} new card${newCards.length > 1 ? 's' : ''} added!`;
+            counterEl.style.display = 'block';
+        } else {
+            counterEl.style.display = 'none';
+        }
+
         this.renderCollection();
         this.updateFloatingBasket();
     },
@@ -97,12 +116,30 @@ export const ui = {
         section.dataset.groupColor = groupColor;
         const bannerUrl = state.siteContent.groupBanners?.[groupName];
         const logoUrl = state.metadata.groupLogos?.[groupName];
+
+        // --- Sneak Peek Logic ---
+        const allGroupCards = state.cards.filter(c => c.group === groupName && c.status === 'available');
+        const rareCards = allGroupCards.filter(c => c.isRare).sort((a, b) => b.price - a.price);
+        const nonRareCards = allGroupCards.filter(c => !c.isRare).sort((a, b) => b.price - a.price);
+        
+        const sneakPeekCards = [...rareCards, ...nonRareCards]
+            .slice(0, 10)
+            .sort(() => 0.5 - Math.random()); // Randomize for varied display
+
+        const sneakPeekHtml = sneakPeekCards.map((card, index) => `
+            <div class="sneak-peek-card" data-doc-id="${card.docId}" style="--i: ${index};">
+                <img src="${card.image}" alt="${card.album}">
+                <div class="sneak-peek-price">€${utils.calculateDiscountedPrice(card.price, card.discount).toFixed(2)}</div>
+            </div>
+        `).join('');
+
         section.innerHTML = `
             ${bannerUrl ? `<div class="group-banner" style="background-image: url(${bannerUrl})"></div>` : ''}
             <div class="title-container">
                 <h2 class="hero-title font-display animate-in">${groupName}</h2>
                 <p class="group-subtitle animate-in" style="transition-delay: 0.1s;">${(state.siteContent.groupSubtitles || {})[groupName] || ''}</p>
             </div>
+            ${sneakPeekCards.length > 0 ? `<div class="sneak-peek-container animate-in" style="transition-delay: 0.2s;">${sneakPeekHtml}</div>` : ''}
             ${logoUrl ? `<img src="${logoUrl}" class="group-logo animate-in" style="transition-delay: 0.2s;">` : ''}
         `;
         return section;
@@ -855,3 +892,4 @@ export const ui = {
         this.initCarousel(sectionEl, filteredCards, sectionId, groupName);
     }
 };
+}

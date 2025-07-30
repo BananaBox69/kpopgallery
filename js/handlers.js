@@ -55,6 +55,14 @@ export const handlers = {
     },
     handleGlobalClick(e) {
         const target = e.target;
+
+        // Handle sneak peek card click for preview modal
+        const sneakCard = target.closest('.sneak-peek-card');
+        if (sneakCard) {
+            this.showCardPreviewModal(sneakCard.dataset.docId);
+            return;
+        }
+
         if (dom.filterSidebar.classList.contains('visible') && !dom.filterSidebar.contains(target) && !target.closest('#filter-bubble')) {
             dom.filterSidebar.classList.remove('visible');
         }
@@ -111,6 +119,10 @@ export const handlers = {
             case 'bulk-archive': this.confirmBulkArchiveAction('archive'); break;
             case 'bulk-delete': this.confirmBulkDelete(); break;
             case 'reset-filters': this.resetUserFilters(); break;
+            case 'add-to-basket-preview': 
+                this.toggleBasketItem(actionTarget, docId);
+                ui.updateCardPreviewModal(docId);
+                break;
         }
     },
     toggleBasketItem(targetElement, docId) {
@@ -370,6 +382,11 @@ export const handlers = {
                 <img src="${src}" class="w-full h-auto rounded-lg">
             </div>`;
         ui.openModal('imagePreview', content);
+    },
+    showCardPreviewModal(docId) {
+        const card = state.cards.find(c => c.docId === docId);
+        if (!card) return;
+        ui.openModal('cardPreview', ui.createCardPreviewModalContent(card), true);
     },
     showConfirmationModal(message, onConfirm, type = 'confirm', customButtons = null) {
         let buttonsHtml = '';
@@ -779,3 +796,4 @@ export const handlers = {
         localStorage.setItem('photocard_tutorial_seen_v2', 'true');
     }
 };
+}

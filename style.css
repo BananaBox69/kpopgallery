@@ -177,6 +177,7 @@ body {
     transform: rotateY(-70deg); /* Fine-tuned angle */
 }
 
+
 /* --- Typography and Text Styles --- */
 .hero-title {
     font-size: 4.5rem;
@@ -1130,4 +1131,5 @@ border-radius: 0.25rem; }
     }
     #filter-sidebar { width: 100%; 
     }
+}
 }
