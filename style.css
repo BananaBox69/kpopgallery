@@ -854,6 +854,7 @@ border-radius: 0.25rem; }
     grid-template-columns: repeat(7, 40px); /* 7 columns of 40px width */
     gap: 0.5rem;
     justify-content: flex-end;
+    align-items: center; /* Add this line */
 }
 
 /* This is for the empty placeholder cells in the grid */

@@ -12,9 +12,19 @@ export const handlers = {
         document.body.addEventListener('click', this.handleGlobalClick.bind(this));
         dom.adminView.addEventListener('change', this.handleAdminFormChange.bind(this));
         dom.adminView.addEventListener('input', this.handleAdminFormInput.bind(this));
-        dom.floatingNavContainer.addEventListener('click', this.handleNavClick.bind(this));
-        dom.navToggleBtn.addEventListener('click', this.toggleNav.bind(this));
-        dom.navToggleBtn.innerHTML = this.arrowRightSVG;
+        
+        // We now add the event listener to the container, as the button itself is dynamic
+        dom.floatingNavContainer.addEventListener('click', (e) => {
+            if (e.target.closest('#nav-toggle-btn')) {
+                this.toggleNav(e.target.closest('#nav-toggle-btn'));
+            } else {
+                this.handleNavClick(e);
+            }
+        });
+        
+        // Set the initial icon on the cached button reference in the DOM object
+        // Note: The button might not exist on first load, so we need to find it after render.
+        // The toggleNav function will handle the icon from now on.
         dom.floatingEmptyBtn.addEventListener('click', () => this.confirmEmptyBasket());
         
         dom.filterBubble.addEventListener('click', () => dom.filterSidebar.classList.add('visible'));
@@ -27,10 +37,17 @@ export const handlers = {
         dom.tutorialNextBtn.addEventListener('click', this.handleTutorialNext.bind(this));
         dom.tutorialCloseBtn.addEventListener('click', this.closeTutorial.bind(this));
     },
-    toggleNav() {
-        dom.floatingNavContent.classList.toggle('is-hidden');
-        const isHidden = dom.floatingNavContent.classList.contains('is-hidden');
-        dom.navToggleBtn.innerHTML = isHidden ? this.arrowLeftSVG : this.arrowRightSVG;
+    toggleNav(btn) {
+        // Find the content to hide/show, it's a sibling of the button's parent cluster
+        const navCluster = btn.closest('.nav-cluster');
+        if (!navCluster) return;
+
+        const content = navCluster.querySelector('#floating-nav-content .nav-cluster > div'); // Adjust selector
+        if (!content) return;
+
+        content.classList.toggle('is-hidden');
+        const isHidden = content.classList.contains('is-hidden');
+        btn.innerHTML = isHidden ? this.arrowLeftSVG : this.arrowRightSVG;
     },
     handleNavClick(e) {
         const navBtn = e.target.closest('a.nav-btn');

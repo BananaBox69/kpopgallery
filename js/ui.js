@@ -248,84 +248,99 @@ export const ui = {
         });
     },
     renderFloatingNav(sectionsToRender) {
-                    dom.floatingNavContent.innerHTML = ''; // Clear previous nav
+        dom.floatingNavContent.innerHTML = ''; // Clear previous nav
 
-                    // Define the specific layout you want
-                    const layout = {
-                        'Red Velvet': { row: 0, members: ['Irene', 'Seulgi', 'Wendy', 'Joy', 'Yeri'] },
-                        'IU': { row: 1, members: ['IU'] },
-                        'aespa': { row: 2, members: ['Karina', 'Giselle', 'Winter', 'Ningning'] }
-                    };
+        // --- Create the Toggle Button first, as it's always visible ---
+        const navToggleBtn = document.createElement('button');
+        navToggleBtn.id = 'nav-toggle-btn';
+        // We will add the SVG icon later inside the handlers.init() function
 
-                    const numRows = 3;
-                    const numCols = 7;
-                    const navGrid = Array.from({ length: numRows }, () => Array(numCols).fill(null));
+        // --- Define the structure of our grid ---
+        const layout = {
+            'Red Velvet': { row: 0, members: ['Irene', 'Seulgi', 'Wendy', 'Joy', 'Yeri'] },
+            'IU': { row: 1, members: ['IU'] },
+            'aespa': { row: 2, members: ['Karina', 'Giselle', 'Winter', 'Ningning'] }
+        };
+        const numRows = 3;
+        const numCols = 7;
+        const navGrid = Array.from({ length: numRows }, () => Array(numCols).fill(null));
 
-                    // --- Create and place all the buttons ---
-                    (state.metadata.groupOrder || []).forEach(groupName => {
-                        const groupConfig = layout[groupName];
-                        if (!groupConfig) return;
+        // --- Check which sections exist and create buttons for them ---
+        sectionsToRender.forEach(section => {
+            const groupConfig = layout[section.name] || layout[section.group];
+            if (!groupConfig) return;
 
-                        const rowIndex = groupConfig.row;
-                        const members = groupConfig.members;
+            const rowIndex = groupConfig.row;
 
-                        // Place member buttons
-                        members.forEach((memberName, memberIndex) => {
-                            const btn = document.createElement('a');
-                            const sectionId = `member-${groupName.toLowerCase().replace(/\s/g, '-')}-${memberName.toLowerCase().replace(/\s/g, '-')}`;
-                            btn.href = `#${sectionId}`;
-                            btn.className = 'nav-btn';
-                            btn.style.backgroundColor = config.colors[groupName]?.[memberName] || 'var(--default-ui-color)';
-                            btn.textContent = (groupName === 'IU' && memberName === 'IU') ? config.groupPrefixes.IU : memberName.charAt(0);
-                            
-                            // Specific column placement based on your layout
-                            let colIndex = -1;
-                            if (groupName === 'Red Velvet') colIndex = memberIndex;
-                            if (groupName === 'IU') colIndex = 4;
-                            if (groupName === 'aespa') colIndex = memberIndex + 1;
-                            
-                            if (colIndex !== -1) navGrid[rowIndex][colIndex] = btn;
-                        });
+            if (section.type === 'group') {
+                const groupBtn = document.createElement('a');
+                groupBtn.href = `#group-${section.name.toLowerCase().replace(/\s/g, '-')}`;
+                groupBtn.className = 'nav-btn';
+                groupBtn.style.backgroundColor = config.colors[section.name]?.group || 'var(--default-ui-color)';
+                groupBtn.textContent = (section.name === 'IU') ? config.memberPrefixes.IU : config.groupPrefixes[section.name] || section.name.charAt(0);
+                navGrid[rowIndex][5] = groupBtn; // Group buttons are always in column 6 (index 5)
+            } else if (section.type === 'member') {
+                const memberIndex = groupConfig.members.indexOf(section.name);
+                if (memberIndex === -1) return;
 
-                        // Place group button
-                        const groupBtn = document.createElement('a');
-                        groupBtn.href = `#group-${groupName.toLowerCase().replace(/\s/g, '-')}`;
-                        groupBtn.className = 'nav-btn';
-                        groupBtn.style.backgroundColor = config.colors[groupName]?.group || 'var(--default-ui-color)';
-                        groupBtn.textContent = (groupName === 'IU') ? config.memberPrefixes.IU : config.groupPrefixes[groupName] || groupName.charAt(0);
-                        navGrid[rowIndex][5] = groupBtn; // Always in the 6th column
-                    });
+                const btn = document.createElement('a');
+                btn.href = `#member-${section.group.toLowerCase().replace(/\s/g, '-')}-${section.name.toLowerCase().replace(/\s/g, '-')}`;
+                btn.className = 'nav-btn';
+                btn.style.backgroundColor = config.colors[section.group]?.[section.name] || 'var(--default-ui-color)';
+                btn.textContent = (section.group === 'IU' && section.name === 'IU') ? config.groupPrefixes.IU : section.name.charAt(0);
+                
+                let colIndex = -1;
+                if (section.group === 'Red Velvet') colIndex = memberIndex;
+                if (section.group === 'IU') colIndex = 4;
+                if (section.group === 'aespa') colIndex = memberIndex + 1;
+                
+                if (colIndex !== -1) navGrid[rowIndex][colIndex] = btn;
+            }
+        });
 
-                    // --- Place special buttons (Home) ---
-                    const homeBtn = document.createElement('a');
-                    homeBtn.href = '#main-section';
-                    homeBtn.className = 'nav-btn';
-                    homeBtn.style.backgroundColor = 'var(--default-ui-color)';
-                    homeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`;
-                    navGrid[1][6] = homeBtn; // IU Row, 7th column
+        // --- Place special static buttons (Home and Toggle) ---
+        const homeBtn = document.createElement('a');
+        homeBtn.href = '#main-section';
+        homeBtn.className = 'nav-btn';
+        homeBtn.style.backgroundColor = 'var(--default-ui-color)';
+        homeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`;
+        
+        // Only add the IU row special buttons if the IU section exists
+        if (sectionsToRender.some(s => s.name === 'IU' || s.group === 'IU')) {
+            navGrid[1][6] = homeBtn;
+        }
+        
+        // Always place the toggle button in the top right
+        navGrid[0][6] = navToggleBtn;
 
-                    // --- Render the grid ---
-                    navGrid.forEach(rowData => {
-                        const rowEl = document.createElement('div');
-                        rowEl.className = 'nav-row';
-                        let hasContent = false;
-                        rowData.forEach(cellData => {
-                            if (cellData) {
-                                rowEl.appendChild(cellData);
-                                hasContent = true;
-                            } else {
-                                // Add an empty placeholder to maintain grid alignment
-                                const emptyCell = document.createElement('div');
-                                emptyCell.className = 'nav-cell empty';
-                                rowEl.appendChild(emptyCell);
-                            }
-                        });
-                        // Only add the row to the DOM if it has at least one button
-                        if (hasContent) {
-                            dom.floatingNavContent.appendChild(rowEl);
-                        }
-                    });
-                },
+        // --- Render the final grid to the DOM ---
+        const navWrapper = document.createElement('div');
+        navGrid.forEach(rowData => {
+            const rowEl = document.createElement('div');
+            rowEl.className = 'nav-row';
+            let hasContent = false;
+            rowData.forEach(cellData => {
+                if (cellData) {
+                    rowEl.appendChild(cellData);
+                    hasContent = true;
+                } else {
+                    const emptyCell = document.createElement('div');
+                    emptyCell.className = 'nav-cell empty';
+                    rowEl.appendChild(emptyCell);
+                }
+            });
+            if (hasContent) {
+                navWrapper.appendChild(rowEl);
+            }
+        });
+
+        // Add the finished grid and the toggle button's container to the DOM
+        const navCluster = document.createElement('div');
+        navCluster.className = 'nav-cluster';
+        navCluster.appendChild(navWrapper);
+        
+        dom.floatingNavContent.appendChild(navCluster);
+    },
         
     renderAdminView() {
         dom.adminView.innerHTML = `
