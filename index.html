@@ -410,7 +410,14 @@
         }
 
         /* --- Floating UI Elements --- */
-        .floating-ui-container { position: fixed; bottom: 1.5rem; right: 1.5rem; display: flex; flex-direction: column; gap: 1rem; z-index: 100; }
+        .floating-ui-container { 
+            position: fixed; bottom: 1.5rem; right: 1.5rem; 
+            display: flex; flex-direction: column; gap: 1rem; z-index: 100;
+            transition: bottom 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .floating-ui-container.raised {
+            bottom: 110px;
+        }
         .floating-basket {
             position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%);
             width: 90%; max-width: 600px; background-color: rgba(30, 30, 30, 0.9);
@@ -783,28 +790,24 @@
         /* --- Responsive Design --- */
         @media (max-width: 1024px) {
             .member-section { grid-template-columns: 1fr; gap: 2rem; }
-            .card-details-panel { text-align: center; }
-            .member-quote {
-                position: relative;
-                top: auto; left: auto;
-                order: 1; /* Place it after the name/group */
-                margin: 0 auto 1.5rem auto;
-                text-align: center;
-                max-width: 80%;
-                font-size: 1rem;
-            }
-            .member-quote::before { display: none; } /* Hide decorative quote on mobile */
+            .card-details-panel { text-align: center; order: 1; }
+            .carousel-container { order: 2; }
+            .member-quote { display: none; }
             .card-details-panel .member-name { font-size: 2.5rem; }
             .card-details-panel .group-name { font-size: 1.25rem; }
-            .carousel-container { height: 380px; }
-            .carousel-arrow { display: none; } /* Hide arrows on mobile */
+            .carousel-container { height: 380px; margin-top: -2rem; }
+            .carousel-arrow { display: none; }
             .carousel-card {
                 width: var(--mobile-card-width);
                 height: var(--mobile-card-height);
                 margin-left: calc(var(--mobile-card-width) / -2);
                 margin-top: calc(var(--mobile-card-height) / -2);
             }
-            :root { --carousel-radius: 45vw; } /* Dynamic radius for mobile */
+            .group-logo {
+                left: 50%;
+                bottom: 1.5rem;
+                transform: translateX(-50%);
+            }
 
             .admin-card-item { grid-template-columns: auto 50px 1fr; grid-template-rows: auto auto; }
             .admin-card-info { grid-column: 3 / -1; }
@@ -813,7 +816,7 @@
         @media (max-width: 768px) {
             .hero-title { font-size: 3rem; }
             .hero-subtitle { font-size: 1rem; }
-            .member-signature, .group-logo { display: none; } /* Hide signature on small screens */
+            .member-signature { display: none; }
 
             .admin-card-info { grid-template-columns: repeat(1, 1fr); }
             .admin-header { flex-direction: column; align-items: flex-start; }
@@ -856,7 +859,7 @@
                 <button id="checkout-btn" class="checkout-btn py-2 px-5 font-semibold">View Basket</button>
             </div>
         </div>
-        <div class="floating-ui-container">
+        <div id="floating-ui-container" class="floating-ui-container">
             <div id="filter-bubble" class="floating-bubble" title="Filter & Search">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
             </div>
@@ -990,6 +993,7 @@
                 floatingBasket: document.getElementById('floating-basket'),
                 floatingEmptyBtn: document.getElementById('floating-empty-btn'),
                 basketInfo: document.getElementById('basket-info'),
+                floatingUiContainer: document.getElementById('floating-ui-container'),
                 floatingNavContainer: document.getElementById('floating-nav-container'),
                 floatingNavContent: document.getElementById('floating-nav-content'),
                 navToggleBtn: document.getElementById('nav-toggle-btn'),
@@ -1357,6 +1361,7 @@
                 },
                 updateFloatingBasket() {
                     const allArrows = document.querySelectorAll('.scroll-down-arrow');
+                    const floatingUI = dom.floatingUiContainer;
                     if (state.basket.length > 0) {
                         const totalItems = state.basket.length;
                         const totalPrice = state.basket.reduce((sum, item) => sum + utils.calculateDiscountedPrice(item.price, item.discount), 0);
@@ -1364,10 +1369,12 @@
                         dom.floatingEmptyBtn.classList.remove('hidden');
                         dom.floatingBasket.classList.add('visible');
                         allArrows.forEach(arrow => arrow.classList.add('raised'));
+                        if(floatingUI) floatingUI.classList.add('raised');
                     } else {
                         dom.floatingEmptyBtn.classList.add('hidden');
                         dom.floatingBasket.classList.remove('visible');
                         allArrows.forEach(arrow => arrow.classList.remove('raised'));
+                        if(floatingUI) floatingUI.classList.remove('raised');
                     }
                 },
                 updateCardUIState(docId) {
@@ -1685,7 +1692,8 @@
                         carouselEl.innerHTML = cardsForPage.map((card, i) => this.createCarouselCard(card, i, cardsForPage)).join('');
                         
                         const cardWidth = window.innerWidth < 1024 ? 180 : 220;
-                        const radius = window.innerWidth < 1024 ? (window.innerWidth * 0.45) : 400;
+                        const baseMobileRadius = window.innerWidth * 0.45;
+                        const radius = window.innerWidth < 1024 ? Math.max(baseMobileRadius, cardsForPage.length * 25) : 400;
 
                         leftArrow.style.left = `calc(50% - ${radius / 2}px - ${cardWidth / 4}px)`;
                         rightArrow.style.left = `calc(50% + ${radius / 2}px + ${cardWidth / 4}px)`;
@@ -1711,7 +1719,6 @@
                     };
 
                     let isDown = false, startX, startRotation;
-                    let lastX = 0;
 
                     const spawnSparkles = (sparkleContainer, color = 'white') => {
                         sparkleContainer.innerHTML = '';
@@ -1800,7 +1807,7 @@
                             }
 
                             const sparkleContainer = cardEl.querySelector('.sparkle-container');
-                            if (sparkleContainer) {
+                            if (sparkleContainer && window.innerWidth > 768) { // Performance check
                                 if (isActive) {
                                     if (isRare) {
                                         sparkleContainer.classList.add('has-sparkle');
@@ -1862,17 +1869,16 @@
                         isDown = true;
                         carouselEl.classList.add('is-dragging');
                         startX = x;
-                        lastX = x;
                         startRotation = rotation;
                     };
 
-                    const handleDragMove = (x) => {
+                    const handleDragMove = (x, e) => {
                         if (!isDown) return;
+                        if(e.type === 'touchmove') e.preventDefault();
                         const walk = (x - startX);
                         rotation = startRotation + (walk * 0.5);
                         carouselEl.style.transition = 'none'; 
                         carouselEl.style.transform = `rotateY(${rotation}deg)`;
-                        lastX = x;
                     };
 
                     const handleDragEnd = () => {
@@ -1894,10 +1900,10 @@
                     carouselEl.addEventListener('touchstart', (e) => {
                         if (e.target.closest('.card-flip-overlay, .card-click-overlay, .card-status-overlay-back')) return;
                         handleDragStart(e.touches[0].clientX);
-                    });
+                    }, { passive: false });
 
-                    window.addEventListener('mousemove', (e) => handleDragMove(e.clientX));
-                    window.addEventListener('touchmove', (e) => handleDragMove(e.touches[0].clientX));
+                    window.addEventListener('mousemove', (e) => handleDragMove(e.clientX, e));
+                    window.addEventListener('touchmove', (e) => handleDragMove(e.touches[0].clientX, e), { passive: false });
 
                     window.addEventListener('mouseup', handleDragEnd);
                     window.addEventListener('touchend', handleDragEnd);
