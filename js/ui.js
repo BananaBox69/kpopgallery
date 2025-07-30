@@ -250,103 +250,72 @@ export const ui = {
     renderFloatingNav(sectionsToRender) {
         dom.floatingNavContent.innerHTML = ''; // Clear previous nav
 
-        // --- Create the Toggle Button first, as it's a special case ---
-        const navToggleBtn = document.createElement('button');
-        navToggleBtn.id = 'nav-toggle-btn';
-        navToggleBtn.innerHTML = this.arrowRightSVG; // Set the initial icon here
-
-        // --- Define the ideal structure of our grid ---
-        const layout = {
-            'Red Velvet': { row: 0, members: ['Irene', 'Seulgi', 'Wendy', 'Joy', 'Yeri'] },
-            'IU': { row: 1, members: ['IU'] },
-            'aespa': { row: 2, members: ['Karina', 'Giselle', 'Winter', 'Ningning'] }
-        };
-        const numRows = 3;
-        const numCols = 7;
-        const navGrid = Array.from({ length: numRows }, () => Array(numCols).fill(null));
-
-        // --- Determine which buttons should be created ---
-        const buttonsToCreate = {}; // e.g., { 'Red Velvet': true, 'Irene': true, ... }
+        // Create a map to hold elements for each group row
+        const groupDataMap = {};
+        (state.metadata.groupOrder || []).forEach(groupName => {
+            groupDataMap[groupName] = { memberBtns: [], groupBtn: null };
+        });
+        // Create and categorize all buttons
         sectionsToRender.forEach(section => {
-            buttonsToCreate[section.name] = true;
-            if (section.group) {
-                buttonsToCreate[section.group] = true; // Make sure parent group is also flagged
-            }
-        });
+            const btn = document.createElement('a');
+            btn.className = 'nav-btn';
+            btn.href = `#${section.type}-${section.type === 'group' ? section.name.toLowerCase().replace(/\s/g, '-') : `${section.group.toLowerCase().replace(/\s/g, '-')}-${section.name.toLowerCase().replace(/\s/g, '-')}`}`;
 
-        // --- Fill the grid based on the layout and visibility ---
-        Object.keys(layout).forEach(groupName => {
-            const groupConfig = layout[groupName];
-            const rowIndex = groupConfig.row;
-
-            // Place member buttons
-            groupConfig.members.forEach((memberName, memberIndex) => {
-                let colIndex = -1;
-                if (groupName === 'Red Velvet') colIndex = memberIndex;
-                if (groupName === 'IU') colIndex = 4;
-                if (groupName === 'aespa') colIndex = memberIndex + 1;
-
-                if (colIndex !== -1) {
-                    if (buttonsToCreate[memberName]) {
-                        const btn = document.createElement('a');
-                        btn.href = `#member-${groupName.toLowerCase().replace(/\s/g, '-')}-${memberName.toLowerCase().replace(/\s/g, '-')}`;
-                        btn.className = 'nav-btn';
-                        btn.style.backgroundColor = config.colors[groupName]?.[memberName] || 'var(--default-ui-color)';
-                        btn.textContent = (groupName === 'IU' && memberName === 'IU') ? config.groupPrefixes.IU : memberName.charAt(0);
-                        navGrid[rowIndex][colIndex] = btn;
-                    }
+            if (section.type === 'group') {
+                const groupColor = config.colors[section.name]?.group || 'var(--default-ui-color)';
+                btn.style.backgroundColor = groupColor;
+                // --- MODIFIED: Swapped IU lettering ---
+                if (section.name === 'IU') {
+                    btn.textContent = config.memberPrefixes.IU; // 'U'
+                } else {
+                    btn.textContent = config.groupPrefixes[section.name] || section.name.charAt(0);
                 }
-            });
+                
+                if (groupDataMap[section.name]) {
+                    groupDataMap[section.name].groupBtn = btn;
+                }
+            } else { // member
+                const memberColor = config.colors[section.group]?.[section.name] || 'var(--default-ui-color)';
+                btn.style.backgroundColor = memberColor;
+                // --- MODIFIED: Swapped IU lettering ---
+                if (section.group === 'IU' && section.name === 'IU') {
+                    btn.textContent = config.groupPrefixes.IU; // 'I'
+                } else {
+                    btn.textContent = section.name.charAt(0);
+                }
 
-            // Place group button
-            if (buttonsToCreate[groupName]) {
-                const groupBtn = document.createElement('a');
-                groupBtn.href = `#group-${groupName.toLowerCase().replace(/\s/g, '-')}`;
-                groupBtn.className = 'nav-btn';
-                groupBtn.style.backgroundColor = config.colors[groupName]?.group || 'var(--default-ui-color)';
-                groupBtn.textContent = (groupName === 'IU') ? config.memberPrefixes.IU : config.groupPrefixes[groupName] || groupName.charAt(0);
-                navGrid[rowIndex][5] = groupBtn;
+                if (groupDataMap[section.group]) {
+                    groupDataMap[section.group].memberBtns.push(btn);
+                }
             }
         });
+        // Create and add the Home button row
+        const homeRow = document.createElement('div');
+        homeRow.className = 'nav-row';
+        const homeBtn = document.createElement('a');
+        homeBtn.href = '#main-section';
+        homeBtn.className = 'nav-btn';
+        homeBtn.style.backgroundColor = 'var(--default-ui-color)';
+        homeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`;
+        homeRow.appendChild(homeBtn);
+        dom.floatingNavContent.appendChild(homeRow);
 
-        // --- Place special static buttons ---
-        if (buttonsToCreate['IU']) {
-            const homeBtn = document.createElement('a');
-            homeBtn.href = '#main-section';
-            homeBtn.className = 'nav-btn';
-            homeBtn.style.backgroundColor = 'var(--default-ui-color)';
-            homeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`;
-            navGrid[1][6] = homeBtn;
-        }
-
-        // --- Assemble the final DOM elements ---
-        const navCluster = document.createElement('div');
-        navCluster.className = 'nav-cluster';
-
-        navGrid.forEach(rowData => {
-            const rowEl = document.createElement('div');
-            rowEl.className = 'nav-row';
-            let hasContentInRow = rowData.some(cell => cell !== null);
-            
-            if (hasContentInRow) {
-                rowData.forEach(cellData => {
-                    if (cellData) {
-                        rowEl.appendChild(cellData);
-                    } else {
-                        const emptyCell = document.createElement('div');
-                        emptyCell.className = 'nav-cell empty';
-                        rowEl.appendChild(emptyCell);
-                    }
-                });
-                navCluster.appendChild(rowEl);
+        // Build and append each group row in the correct order
+        (state.metadata.groupOrder || []).forEach(groupName => {
+            const groupData = groupDataMap[groupName];
+            if (groupData && (groupData.memberBtns.length > 0 || groupData.groupBtn)) {
+                const groupRow = document.createElement('div');
+                groupRow.className = 'nav-row';
+                
+                groupData.memberBtns.forEach(btn => groupRow.appendChild(btn));
+                if (groupData.groupBtn) {
+                    groupRow.appendChild(groupData.groupBtn);
+                }
+                
+                dom.floatingNavContent.appendChild(groupRow);
             }
         });
-
-        // Add the finished grid and the toggle button to the main container
-        dom.floatingNavContent.appendChild(navCluster);
-        dom.floatingNavContent.after(navToggleBtn); // Place toggle button after the content
     },
-        
     renderAdminView() {
         dom.adminView.innerHTML = `
             <div class="admin-header">

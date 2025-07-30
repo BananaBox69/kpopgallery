@@ -840,34 +840,24 @@ border-radius: 0.25rem; }
     align-items: flex-start;
     gap: 0.5rem;
 }
-
 #floating-nav-content {
     display: flex;
-    flex-direction: column; /* The rows will stack vertically */
+    flex-direction: column;
     align-items: flex-end;
     gap: 0.5rem;
     transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out;
-}
-
-.nav-row {
-    display: grid; /* Use grid for columns */
-    grid-template-columns: repeat(7, 40px); /* 7 columns of 40px width */
-    gap: 0.5rem;
-    justify-content: flex-end;
-    align-items: center; /* Add this line */
-}
-
-/* This is for the empty placeholder cells in the grid */
-.nav-cell.empty {
-    width: 40px;
-    height: 40px;
 }
 #floating-nav-content.is-hidden {
     transform: translateX(calc(100% + 50px));
     opacity: 0;
     pointer-events: none;
 }
-
+.nav-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
 .nav-btn {
     width: 40px;
     height: 40px;
