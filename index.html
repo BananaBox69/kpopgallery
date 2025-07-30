@@ -14,6 +14,8 @@
             --velvet-black: #121212;
             --card-width: 220px;
             --card-height: 341px;
+            --mobile-card-width: 180px;
+            --mobile-card-height: 279px;
             --color-redvelvet: #FF4757;
             --color-iu: #50C878;
             --color-aespa: #87CEEB;
@@ -29,7 +31,7 @@
             --color-ningning: #C71585;
             --default-ui-color: #777;
             --floating-ui-color: var(--default-ui-color);
-            --fixed-carousel-radius: 400px;
+            --carousel-radius: 400px;
             --hero-glow-color: rgba(119, 119, 119, 0.5); /* Default glow color */
         }
         html { scroll-behavior: smooth; }
@@ -130,7 +132,7 @@
                     transparent 40px
                 );
             background-size: cover, auto, 40px 40px;
-            opacity: 0.3; /* <-- ADJUSTED FOR MORE VISIBILITY */
+            opacity: 0.3; 
 
             /* Fade edges to blend into the darkness */
             -webkit-mask-image: linear-gradient(to top, transparent 5%, black 25%, black 75%, transparent 95%);
@@ -172,14 +174,13 @@
             font-family: 'Playfair Display', serif;
             font-style: italic;
             font-weight: 400;
-            font-size: 1.1rem; /* Made quote smaller */
+            font-size: 1.1rem;
             color: var(--member-color);
-            max-width: calc(50% - 4rem); /* Widened quote container */
+            max-width: calc(50% - 4rem);
             text-align: left;
             z-index: 5;
             text-shadow: 0 1px 10px rgba(0,0,0,0.5);
         }
-        /* New decorative quote mark */
         .member-quote::before {
             content: '“';
             position: absolute;
@@ -209,9 +210,6 @@
             padding: 0.75rem 2rem; border-radius: 9999px; font-weight: 700;
             display: inline-block; transition: all 0.2s ease;
         }
-        .add-to-basket-main-btn.in-basket {
-            /* Background color is handled by JS now */
-        }
         .add-to-basket-main-btn:hover { transform: scale(1.05); }
         .add-to-basket-main-btn:disabled { background-color: #555; cursor: not-allowed; opacity: 0.7; }
 
@@ -219,9 +217,9 @@
         .carousel-container { width: 100%; height: 460px; position: relative; perspective: 1500px; }
         .carousel {
             width: 100%;
-            height: 400px;
+            height: 100%;
             position: absolute;
-            top: 60px; 
+            top: 0;
             transform-style: preserve-3d;
             transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
             cursor: grab;
@@ -229,7 +227,7 @@
         .carousel.is-dragging { cursor: grabbing; }
         .carousel-arrow {
             position: absolute;
-            top: calc(60px + (400px / 2)); 
+            top: 50%; 
             transform: translateY(-50%) translateX(-50%);
             z-index: 10; width: 50px; height: 50px; border-radius: 50%;
             background-color: var(--member-color); color: white;
@@ -276,8 +274,8 @@
         /* --- Carousel Cards --- */
         .carousel-card {
             position: absolute; left: 50%; top: 50%;
-            margin-left: calc(var(--card-width) / -2); margin-top: calc(var(--card-height) / -2);
             width: var(--card-width); height: var(--card-height);
+            margin-left: calc(var(--card-width) / -2); margin-top: calc(var(--card-height) / -2);
             transform-style: preserve-3d; transform-origin: center center;
         }
         .carousel-card-inner {
@@ -301,101 +299,50 @@
         .carousel-card-face img { width: 100%; height: 100%; object-fit: cover; }
         .carousel-card-back { transform: rotateY(180deg); }
 
-        /* --- Card Sheen Effect (Using HTML Element) --- */
+        /* --- Card Sheen Effect --- */
         .card-sheen-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(
-                45deg,
-                transparent 40%,
-                rgba(255, 255, 255, 0.3) 50%, /* Sheen color, slightly more opaque */
-                transparent 60%
-            );
-            background-size: 200% 200%; /* Make the gradient larger than the element */
-            background-position: -100% -100%; /* Start off-screen top-left */
-            animation: cardSheen 2.5s infinite linear; /* Adjust duration */
-            pointer-events: none; /* Ensure clicks pass through */
-            mix-blend-mode: screen; /* Blends nicely with card image */
-            border-radius: 1rem; /* Match card border-radius */
-            
-            /* Aggressive hiding: start invisible and scaled to zero */
-            opacity: 0;
-            visibility: hidden;
-            transform: scale(0); 
-            transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease; /* Animate scale as well */
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(45deg, transparent 40%, rgba(255, 255, 255, 0.3) 50%, transparent 60%);
+            background-size: 200% 200%;
+            background-position: -100% -100%;
+            animation: cardSheen 2.5s infinite linear;
+            pointer-events: none;
+            mix-blend-mode: screen;
+            border-radius: 1rem;
+            opacity: 0; visibility: hidden; transform: scale(0); 
+            transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
         }
-
-        /* When has-sheen is applied AND the card is NOT flipped, make it visible and opaque */
         .carousel-card:not(.is-flipped) .carousel-card-front .card-sheen-overlay.is-sheen-active {
-            opacity: 1;
-            visibility: visible;
-            transform: scale(1); /* Scale back to normal size */
+            opacity: 1; visibility: visible; transform: scale(1);
         }
-
         @keyframes cardSheen {
-            0% {
-                background-position: -100% -100%; /* Start top-left */
-            }
-            100% {
-                background-position: 100% 100%; /* End bottom-right */
-            }
+            100% { background-position: 100% 100%; }
         }
 
         /* --- Sparkle/Particle Effect --- */
         .sparkle-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            overflow: hidden; /* Ensure particles don't spill outside card */
-            border-radius: 1rem;
-            opacity: 0; /* Hidden by default */
-            transition: opacity 0.3s ease-out; /* Smoother fade in/out */
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; overflow: hidden; border-radius: 1rem;
+            opacity: 0; transition: opacity 0.3s ease-out;
         }
-
         .carousel-card.is-active .sparkle-container.has-sparkle {
-            opacity: 1;
-            /* Overall animation duration for the container, controlling when particles are visible */
-            animation: sparkle-container-fade 1.0s ease-out forwards;
+            opacity: 1; animation: sparkle-container-fade 1.0s ease-out forwards;
         }
-
         @keyframes sparkle-container-fade {
-            0% { opacity: 0; }
-            10% { opacity: 1; } /* Quick burst of visibility */
-            90% { opacity: 1; }
-            100% { opacity: 0; }
+            0% { opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { opacity: 0; }
         }
-
         .sparkle {
-            position: absolute;
-            background-color: var(--sparkle-color, white); /* Sparkle color, defaults to white */
-            border-radius: 50%; /* Still round, but small and glowing makes it sparkle-like */
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(0); /* Start from center, very small */
-            animation: sparkle-burst 0.8s ease-out forwards; /* Faster, more impactful animation */
-            box-shadow: 0 0 4px 1px var(--sparkle-color-shadow-1, rgba(255,255,255,0.7)), 0 0 8px 2px var(--sparkle-color-shadow-2, rgba(255,255,255,0.4)); /* Stronger, layered glow */
+            position: absolute; background-color: var(--sparkle-color, white);
+            border-radius: 50%; opacity: 0;
+            transform: translate(-50%, -50%) scale(0);
+            animation: sparkle-burst 0.8s ease-out forwards;
+            box-shadow: 0 0 4px 1px var(--sparkle-color-shadow-1, rgba(255,255,255,0.7)), 0 0 8px 2px var(--sparkle-color-shadow-2, rgba(255,255,255,0.4));
         }
-
         @keyframes sparkle-burst {
-            0% {
-                opacity: 0;
-                transform: translate(-50%, -50%) scale(0);
-            }
-            20% { /* Quick pop to full size and opacity */
-                opacity: 1;
-                transform: translate(-50%, -50%) scale(1);
-            }
-            100% {
-                opacity: 0;
-                transform: translate(var(--sparkle-end-x), var(--sparkle-end-y)) scale(0); /* Burst outwards */
-            }
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0); }
+            20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(var(--sparkle-end-x), var(--sparkle-end-y)) scale(0); }
         }
-
 
         /* --- Card Overlays and Indicators --- */
         .card-id-overlay {
@@ -411,10 +358,10 @@
             transition: opacity 0.3s ease;
         }
         .carousel-card-face:hover .card-flip-overlay { opacity: 1; }
-        .card-click-overlay { /* For front face only */
+        .card-click-overlay {
             position: absolute; top:15%; left:0; width:100%; height:85%; z-index: 5; cursor: pointer;
         }
-        .card-status-overlay-back { /* New class for back face overlay */
+        .card-status-overlay-back {
             position: absolute; top:15%; left:0; width:100%; height:85%; z-index: 5; cursor: default;
         }
         .card-added-indicator {
@@ -450,35 +397,16 @@
         .carousel-card.reserved .card-status-overlay,
         .carousel-card.sold .card-status-overlay {
             display: flex;
-            animation: glitch-effect 0.5s infinite alternate; /* Apply glitch effect */
+            animation: glitch-effect 0.5s infinite alternate;
         }
 
-        /* --- Glitch Effect for Status Overlay --- */
         @keyframes glitch-effect {
-            0% {
-                transform: translate(0, 0);
-                filter: brightness(1);
-            }
-            20% {
-                transform: translate(-1px, 1px);
-                filter: brightness(1.1);
-            }
-            40% {
-                transform: translate(1px, -1px);
-                filter: brightness(0.9);
-            }
-            60% {
-                transform: translate(-1px, 1px);
-                filter: brightness(1.1);
-            }
-            80% {
-                transform: translate(1px, -1px);
-                filter: brightness(0.9);
-            }
-            100% {
-                transform: translate(0, 0);
-                filter: brightness(1);
-            }
+            0% { transform: translate(0, 0); filter: brightness(1); }
+            20% { transform: translate(-1px, 1px); filter: brightness(1.1); }
+            40% { transform: translate(1px, -1px); filter: brightness(0.9); }
+            60% { transform: translate(-1px, 1px); filter: brightness(1.1); }
+            80% { transform: translate(1px, -1px); filter: brightness(0.9); }
+            100% { transform: translate(0, 0); filter: brightness(1); }
         }
 
         /* --- Floating UI Elements --- */
@@ -700,13 +628,9 @@
             opacity: 1;
             pointer-events: none;
             transition: opacity 0.5s ease;
-            /* Masking properties to color the signature */
-            -webkit-mask-size: contain;
-            mask-size: contain;
-            -webkit-mask-repeat: no-repeat;
-            mask-repeat: no-repeat;
-            -webkit-mask-position: center;
-            mask-position: center;
+            -webkit-mask-size: contain; mask-size: contain;
+            -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+            -webkit-mask-position: center; mask-position: center;
         }
         .group-logo {
             position: absolute;
@@ -714,13 +638,13 @@
             left: 2rem;
             width: 150px;
             height: 100px;
-            object-fit: contain; /* Ensures logo scales correctly */
+            object-fit: contain;
             opacity: 1;
             pointer-events: none;
             transition: opacity 0.5s ease;
         }
         
-        /* --- MODIFIED: Floating Navigation --- */
+        /* --- Floating Navigation --- */
         #floating-nav-container {
             position: fixed;
             top: 1.5rem;
@@ -749,41 +673,23 @@
             justify-content: flex-end;
         }
         .nav-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            text-decoration: none;
+            width: 40px; height: 40px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: bold; text-decoration: none;
             box-shadow: 0 2px 10px rgba(0,0,0,0.3);
             transition: transform 0.2s ease;
             flex-shrink: 0;
         }
-        .nav-btn:hover {
-            transform: scale(1.1);
-        }
+        .nav-btn:hover { transform: scale(1.1); }
         #nav-toggle-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            background-color: rgba(42, 42, 42, 0.7);
-            backdrop-filter: blur(5px);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            width: 40px; height: 40px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: white; background-color: rgba(42, 42, 42, 0.7);
+            backdrop-filter: blur(5px); box-shadow: 0 2px 10px rgba(0,0,0,0.3);
             transition: transform 0.2s ease;
-            flex-shrink: 0;
-            cursor: pointer;
-            border: none;
+            flex-shrink: 0; cursor: pointer; border: none;
         }
-         #nav-toggle-btn:hover {
-            transform: scale(1.1);
-        }
+         #nav-toggle-btn:hover { transform: scale(1.1); }
         
         /* --- Staggered Animation --- */
         .animate-in {
@@ -798,61 +704,40 @@
 
         /* --- Filter Sidebar --- */
         #filter-sidebar {
-            position: fixed;
-            top: 0;
-            right: 0;
-            width: 320px;
-            height: 100%;
+            position: fixed; top: 0; right: 0;
+            width: 320px; height: 100%;
             background-color: rgba(30, 30, 30, 0.9);
             backdrop-filter: blur(10px);
             border-left: 1px solid rgba(255,255,255,0.1);
             z-index: 150;
             transform: translateX(100%);
             transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), background-color 0.5s ease;
-            display: flex;
-            flex-direction: column;
+            display: flex; flex-direction: column;
         }
-        #filter-sidebar.visible {
-            transform: translateX(0);
-        }
+        #filter-sidebar.visible { transform: translateX(0); }
         .filter-header {
             padding: 1rem 1.5rem;
-            border-bottom: 1px solid; /* color set by JS */
+            border-bottom: 1px solid;
             border-color: var(--floating-ui-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            display: flex; justify-content: space-between; align-items: center;
             flex-shrink: 0;
             transition: border-color 0.5s ease;
         }
         .filter-header h3 {
-            font-size: 1.25rem;
-            font-weight: 700;
+            font-size: 1.25rem; font-weight: 700;
             color: var(--floating-ui-color);
             transition: color 0.5s ease;
         }
         .filter-body {
-            padding: 1.5rem;
-            overflow-y: auto;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
+            padding: 1.5rem; overflow-y: auto; flex-grow: 1;
+            display: flex; flex-direction: column;
         }
-        .filter-body-content {
-            flex-grow: 1;
-        }
-        .filter-tag-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
+        .filter-body-content { flex-grow: 1; }
+        .filter-tag-group { display: flex; flex-wrap: wrap; gap: 0.5rem; }
         .filter-tag {
-            background-color: #444;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            border: 1px solid transparent;
+            background-color: #444; padding: 0.25rem 0.75rem;
+            border-radius: 9999px; font-size: 0.8rem;
+            cursor: pointer; border: 1px solid transparent;
             transition: all 0.2s ease;
         }
         .filter-tag.active {
@@ -864,104 +749,63 @@
 
         /* --- Tutorial Styles --- */
         #tutorial-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 9998; /* Below the bubble and clone */
-            opacity: 0;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 9998; opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s ease;
         }
-        #tutorial-overlay.visible {
-            opacity: 1;
-            /* pointer-events are on the bubble and clone */
-        }
+        #tutorial-overlay.visible { opacity: 1; }
         .tutorial-bubble {
-            position: fixed;
-            background-color: #2a2a2a;
-            color: white;
-            padding: 1rem 1.5rem;
-            border-radius: 0.75rem;
-            max-width: 300px;
-            z-index: 9999;
+            position: fixed; background-color: #2a2a2a; color: white;
+            padding: 1rem 1.5rem; border-radius: 0.75rem;
+            max-width: 300px; z-index: 9999;
             box-shadow: 0 5px 20px rgba(0,0,0,0.4);
             border: 1px solid #555;
-            opacity: 0;
-            visibility: hidden;
+            opacity: 0; visibility: hidden;
             transition: opacity 0.3s ease;
             pointer-events: auto;
         }
-        .tutorial-bubble.visible {
-            opacity: 1;
-            visibility: visible;
-        }
-        .tutorial-bubble-content {
-            margin-bottom: 1rem;
-        }
-        .tutorial-bubble-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 0.5rem;
-        }
-        .tutorial-bubble-pointer {
-            position: absolute;
-            width: 0;
-            height: 0;
-            border-style: solid;
-        }
-        .tutorial-bubble-pointer.left { /* points left, attached to left side of bubble */
-            border-width: 10px 15px 10px 0;
-            border-color: transparent #2a2a2a transparent transparent;
-            top: 50%;
-            left: -15px;
-            transform: translateY(-50%);
-        }
-        .tutorial-bubble-pointer.right { /* points right, attached to right side of bubble */
-            border-width: 10px 0 10px 15px;
-            border-color: transparent transparent transparent #2a2a2a;
-            top: 50%;
-            right: -15px;
-            transform: translateY(-50%);
-        }
-        .tutorial-bubble-pointer.top { /* points up, attached to top of bubble */
-            border-width: 0 10px 15px 10px;
-            border-color: transparent transparent #2a2a2a transparent;
-            left: 50%;
-            top: -15px;
-            transform: translateX(-50%);
-        }
-        .tutorial-bubble-pointer.bottom { /* points down, attached to bottom of bubble */
-            border-width: 15px 10px 0 10px;
-            border-color: #2a2a2a transparent transparent transparent;
-            left: 50%;
-            bottom: -15px;
-            transform: translateX(-50%);
-        }
+        .tutorial-bubble.visible { opacity: 1; visibility: visible; }
+        .tutorial-bubble-content { margin-bottom: 1rem; }
+        .tutorial-bubble-actions { display: flex; justify-content: flex-end; gap: 0.5rem; }
+        .tutorial-bubble-pointer { position: absolute; width: 0; height: 0; border-style: solid; }
+        .tutorial-bubble-pointer.left { border-width: 10px 15px 10px 0; border-color: transparent #2a2a2a transparent transparent; top: 50%; left: -15px; transform: translateY(-50%); }
+        .tutorial-bubble-pointer.right { border-width: 10px 0 10px 15px; border-color: transparent transparent transparent #2a2a2a; top: 50%; right: -15px; transform: translateY(-50%); }
+        .tutorial-bubble-pointer.top { border-width: 0 10px 15px 10px; border-color: transparent transparent #2a2a2a transparent; left: 50%; top: -15px; transform: translateX(-50%); }
+        .tutorial-bubble-pointer.bottom { border-width: 15px 10px 0 10px; border-color: #2a2a2a transparent transparent transparent; left: 50%; bottom: -15px; transform: translateX(-50%); }
         #tutorial-clone-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 9999;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 9999;
         }
-        #tutorial-clone-container > * {
-            pointer-events: none;
-            position: absolute;
-        }
+        #tutorial-clone-container > * { pointer-events: none; position: absolute; }
 
 
         /* --- Responsive Design --- */
         @media (max-width: 1024px) {
-            .member-section { grid-template-columns: 1fr; gap: 3rem; }
+            .member-section { grid-template-columns: 1fr; gap: 2rem; }
             .card-details-panel { text-align: center; }
             .member-quote {
-                position: absolute; /* Keep it absolute on mobile */
+                position: relative;
+                top: auto; left: auto;
+                order: 1; /* Place it after the name/group */
+                margin: 0 auto 1.5rem auto;
                 text-align: center;
                 max-width: 80%;
-                left: 50%;
-                transform: translateX(-50%);
+                font-size: 1rem;
             }
+            .member-quote::before { display: none; } /* Hide decorative quote on mobile */
+            .card-details-panel .member-name { font-size: 2.5rem; }
+            .card-details-panel .group-name { font-size: 1.25rem; }
+            .carousel-container { height: 380px; }
+            .carousel-arrow { display: none; } /* Hide arrows on mobile */
+            .carousel-card {
+                width: var(--mobile-card-width);
+                height: var(--mobile-card-height);
+                margin-left: calc(var(--mobile-card-width) / -2);
+                margin-top: calc(var(--mobile-card-height) / -2);
+            }
+            :root { --carousel-radius: 45vw; } /* Dynamic radius for mobile */
+
             .admin-card-item { grid-template-columns: auto 50px 1fr; grid-template-rows: auto auto; }
             .admin-card-info { grid-column: 3 / -1; }
             .admin-card-actions { grid-column: 1 / -1; flex-direction: row; justify-content: center; margin-top: 0.5rem; }
@@ -969,6 +813,8 @@
         @media (max-width: 768px) {
             .hero-title { font-size: 3rem; }
             .hero-subtitle { font-size: 1rem; }
+            .member-signature, .group-logo { display: none; } /* Hide signature on small screens */
+
             .admin-card-info { grid-template-columns: repeat(1, 1fr); }
             .admin-header { flex-direction: column; align-items: flex-start; }
             .admin-controls { width: 100%; justify-content: space-between; }
@@ -1441,12 +1287,12 @@
 
                     section.innerHTML = `
                         <div class="room-backdrop"></div>
-                        ${quote ? `<div class="member-quote animate-in" style="transition-delay: 0.3s;">${quote.replace(/\n/g, '<br>')}</div>` : ''}
                         <div class="member-section">
                             <div class="card-details-panel">
                                 <p class="card-id-text animate-in">${initialCard.id || 'N/A'}</p>
                                 <h2 class="member-name animate-in" style="color: ${memberNameColor}; transition-delay: 0.05s;">${memberName}</h2>
                                 <p class="group-name animate-in" style="color: ${groupNameColor}; transition-delay: 0.1s;">${groupName}</p>
+                                ${quote ? `<p class="member-quote animate-in" style="transition-delay: 0.1s;">${quote.replace(/\n/g, '<br>')}</p>` : ''}
                                 <p class="album-name animate-in" style="transition-delay: 0.15s;">${initialCard.album || (filteredCards.length === 0 ? 'No matching cards found' : '')}</p>
                                 <p class="version-name animate-in" style="transition-delay: 0.2s;">${initialCard.version || ''}</p>
                                 <p class="price-tag animate-in" style="transition-delay: 0.25s;">${initialCard.price ? `€${finalPrice.toFixed(2)}` : ''}</p>
@@ -1550,13 +1396,11 @@
                 renderFloatingNav(sectionsToRender) {
                     dom.floatingNavContent.innerHTML = ''; // Clear previous nav
 
-                    // Create a map to hold elements for each group row
                     const groupDataMap = {};
                     (state.metadata.groupOrder || []).forEach(groupName => {
                         groupDataMap[groupName] = { memberBtns: [], groupBtn: null };
                     });
 
-                    // Create and categorize all buttons
                     sectionsToRender.forEach(section => {
                         const btn = document.createElement('a');
                         btn.className = 'nav-btn';
@@ -1565,9 +1409,8 @@
                         if (section.type === 'group') {
                             const groupColor = config.colors[section.name]?.group || 'var(--default-ui-color)';
                             btn.style.backgroundColor = groupColor;
-                            // --- MODIFIED: Swapped IU lettering ---
                             if (section.name === 'IU') {
-                                btn.textContent = config.memberPrefixes.IU; // 'U'
+                                btn.textContent = config.memberPrefixes.IU;
                             } else {
                                 btn.textContent = config.groupPrefixes[section.name] || section.name.charAt(0);
                             }
@@ -1578,9 +1421,8 @@
                         } else { // member
                             const memberColor = config.colors[section.group]?.[section.name] || 'var(--default-ui-color)';
                             btn.style.backgroundColor = memberColor;
-                            // --- MODIFIED: Swapped IU lettering ---
                             if (section.group === 'IU' && section.name === 'IU') {
-                                btn.textContent = config.groupPrefixes.IU; // 'I'
+                                btn.textContent = config.groupPrefixes.IU;
                             } else {
                                 btn.textContent = section.name.charAt(0);
                             }
@@ -1591,7 +1433,6 @@
                         }
                     });
 
-                    // Create and add the Home button row
                     const homeRow = document.createElement('div');
                     homeRow.className = 'nav-row';
                     const homeBtn = document.createElement('a');
@@ -1602,7 +1443,6 @@
                     homeRow.appendChild(homeBtn);
                     dom.floatingNavContent.appendChild(homeRow);
 
-                    // Build and append each group row in the correct order
                     (state.metadata.groupOrder || []).forEach(groupName => {
                         const groupData = groupDataMap[groupName];
                         if (groupData && (groupData.memberBtns.length > 0 || groupData.groupBtn)) {
@@ -1844,11 +1684,11 @@
 
                         carouselEl.innerHTML = cardsForPage.map((card, i) => this.createCarouselCard(card, i, cardsForPage)).join('');
                         
-                        const baseRadius = 400;
-                        const cardWidth = 220;
-                        
-                        leftArrow.style.left = `calc(50% - ${baseRadius / 2}px - ${cardWidth / 4}px)`;
-                        rightArrow.style.left = `calc(50% + ${baseRadius / 2}px + ${cardWidth / 4}px)`;
+                        const cardWidth = window.innerWidth < 1024 ? 180 : 220;
+                        const radius = window.innerWidth < 1024 ? (window.innerWidth * 0.45) : 400;
+
+                        leftArrow.style.left = `calc(50% - ${radius / 2}px - ${cardWidth / 4}px)`;
+                        rightArrow.style.left = `calc(50% + ${radius / 2}px + ${cardWidth / 4}px)`;
                         
                         currentIndex = 0;
                         rotation = 0;
@@ -1856,7 +1696,7 @@
                         
                         const cardElements = carouselEl.querySelectorAll('.carousel-card');
                         cardElements.forEach((card, i) => {
-                            card.style.transform = `rotateY(${angle * i}deg) translateZ(${baseRadius}px)`;
+                            card.style.transform = `rotateY(${angle * i}deg) translateZ(${radius}px)`;
                         });
                         
                         carouselEl.style.transform = `rotateY(0deg)`;
@@ -1871,6 +1711,7 @@
                     };
 
                     let isDown = false, startX, startRotation;
+                    let lastX = 0;
 
                     const spawnSparkles = (sparkleContainer, color = 'white') => {
                         sparkleContainer.innerHTML = '';
@@ -2017,17 +1858,24 @@
                         });
                     }
 
-                    carouselEl.addEventListener('mousedown', (e) => {
-                        if (e.target.closest('.card-flip-overlay') || e.target.closest('.card-click-overlay') || e.target.closest('.card-status-overlay-back')) {
-                            return;
-                        }
+                    const handleDragStart = (x) => {
                         isDown = true;
                         carouselEl.classList.add('is-dragging');
-                        startX = e.clientX;
+                        startX = x;
+                        lastX = x;
                         startRotation = rotation;
-                    });
+                    };
 
-                    window.addEventListener('mouseup', () => {
+                    const handleDragMove = (x) => {
+                        if (!isDown) return;
+                        const walk = (x - startX);
+                        rotation = startRotation + (walk * 0.5);
+                        carouselEl.style.transition = 'none'; 
+                        carouselEl.style.transform = `rotateY(${rotation}deg)`;
+                        lastX = x;
+                    };
+
+                    const handleDragEnd = () => {
                         if (!isDown || cardsForPage.length === 0) return;
                         isDown = false;
                         carouselEl.classList.remove('is-dragging');
@@ -2036,13 +1884,24 @@
                         carouselEl.style.transition = 'transform 0.5s cubic-bezier(0.23, 1, 0.32, 1)';
                         carouselEl.style.transform = `rotateY(${rotation}deg)`;
                         updateDetails();
+                    };
+
+                    carouselEl.addEventListener('mousedown', (e) => {
+                        if (e.target.closest('.card-flip-overlay, .card-click-overlay, .card-status-overlay-back')) return;
+                        handleDragStart(e.clientX);
                     });
-                    window.addEventListener('mousemove', (e) => {
-                        if (!isDown) return; e.preventDefault();
-                        const walk = (e.clientX - startX); rotation = startRotation + (walk * 0.5);
-                        carouselEl.style.transition = 'none'; 
-                        carouselEl.style.transform = `rotateY(${rotation}deg)`;
+
+                    carouselEl.addEventListener('touchstart', (e) => {
+                        if (e.target.closest('.card-flip-overlay, .card-click-overlay, .card-status-overlay-back')) return;
+                        handleDragStart(e.touches[0].clientX);
                     });
+
+                    window.addEventListener('mousemove', (e) => handleDragMove(e.clientX));
+                    window.addEventListener('touchmove', (e) => handleDragMove(e.touches[0].clientX));
+
+                    window.addEventListener('mouseup', handleDragEnd);
+                    window.addEventListener('touchend', handleDragEnd);
+
                     section.addEventListener('mousemove', e => {
                         const cardInner = e.target.closest('.carousel-card-inner');
                         if (!cardInner) return;
