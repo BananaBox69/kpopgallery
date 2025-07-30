@@ -415,9 +415,6 @@
             display: flex; flex-direction: column; gap: 1rem; z-index: 100;
             transition: bottom 0.5s cubic-bezier(0.23, 1, 0.32, 1);
         }
-        .floating-ui-container.raised {
-            bottom: 110px;
-        }
         .floating-basket {
             position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%);
             width: 90%; max-width: 600px; background-color: rgba(30, 30, 30, 0.9);
@@ -698,6 +695,39 @@
         }
          #nav-toggle-btn:hover { transform: scale(1.1); }
         
+        /* --- NEW: Section Navigation --- */
+        #section-nav {
+            position: fixed;
+            right: 1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 99;
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .section-nav-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(42, 42, 42, 0.7);
+            backdrop-filter: blur(5px);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .section-nav-btn:hover {
+            transform: scale(1.1);
+        }
+        .section-nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+
         /* --- Staggered Animation --- */
         .animate-in {
             opacity: 0;
@@ -803,16 +833,24 @@
             .card-details-panel { text-align: center; order: 1; margin-bottom: -1rem; }
             .carousel-container { order: 2; }
             .member-quote { display: none; }
+            .add-to-basket-main-btn { display: none; }
             .card-details-panel .member-name { font-size: 2.5rem; }
             .card-details-panel .group-name { font-size: 1.25rem; }
             .carousel-container { height: 380px; margin-top: -2rem; }
             .carousel-arrow { display: none; }
-            .carousel-pagination { top: auto; bottom: 0; }
+            .carousel-pagination { top: 0; bottom: auto; margin-bottom: 1rem; }
+            .carousel { top: 40px; }
             .carousel-card {
                 width: var(--mobile-card-width);
                 height: var(--mobile-card-height);
                 margin-left: calc(var(--mobile-card-width) / -2);
                 margin-top: calc(var(--mobile-card-height) / -2);
+            }
+            .floating-ui-container.raised {
+                bottom: 120px;
+            }
+            #section-nav {
+                display: flex;
             }
 
             .admin-card-item { grid-template-columns: auto 50px 1fr; grid-template-rows: auto auto; }
@@ -856,6 +894,15 @@
                 </div>
             <button id="nav-toggle-btn">
                 </button>
+        </div>
+
+        <div id="section-nav">
+            <button id="prev-section-btn" class="section-nav-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+            </button>
+            <button id="next-section-btn" class="section-nav-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
         </div>
 
         <div id="floating-basket" class="floating-basket">
@@ -986,6 +1033,8 @@
                 carouselPages: {},
                 userFilters: {},
                 activeMemberSectionId: null,
+                allSections: [],
+                currentSectionIndex: 0,
             };
 
             // --- 3. DOM ELEMENT CACHE ---
@@ -1003,6 +1052,9 @@
                 floatingNavContainer: document.getElementById('floating-nav-container'),
                 floatingNavContent: document.getElementById('floating-nav-content'),
                 navToggleBtn: document.getElementById('nav-toggle-btn'),
+                sectionNav: document.getElementById('section-nav'),
+                prevSectionBtn: document.getElementById('prev-section-btn'),
+                nextSectionBtn: document.getElementById('next-section-btn'),
                 filterSidebar: document.getElementById('filter-sidebar'),
                 filterBubble: document.getElementById('filter-bubble'),
                 closeFilterBtn: document.getElementById('close-filter-btn'),
@@ -1156,6 +1208,7 @@
                     dom.userView.style.display = state.isAdminView ? 'none' : 'block';
                     dom.adminView.style.display = state.isAdminView ? 'block' : 'none';
                     if (state.isAdminView) {
+                        dom.sectionNav.style.display = 'none';
                         this.renderAdminView();
                     } else {
                         if (!state.isDataReady.cards) {
@@ -1231,6 +1284,7 @@
                         
                         dom.collectionContainer.appendChild(sectionEl);
                     });
+                    state.allSections = [document.getElementById('main-section'), ...dom.collectionContainer.querySelectorAll('.showcase-section')];
                     this.renderFloatingNav(sectionsToRender);
                     this.updateFloatingBasket();
                     this.initIntersectionObserver();
@@ -1663,13 +1717,16 @@
                                     state.activeMemberSectionId = sectionId;
                                     this.updateFilterSidebarUI();
                                 }
+                                
+                                state.currentSectionIndex = state.allSections.findIndex(s => s.id === sectionId);
+                                handlers.updateSectionNav();
 
                             } else {
                                 entry.target.classList.remove('is-visible');
                             }
                         });
                     }, { threshold: 0.6 });
-                    document.querySelectorAll('.showcase-section').forEach(section => observer.observe(section));
+                    state.allSections.forEach(section => observer.observe(section));
                 },
                 initCarousel(section, cards, sectionId, groupName) {
                     const detailsPanel = section.querySelector('.card-details-panel');
@@ -1706,7 +1763,7 @@
                         carouselEl.innerHTML = cardsForPage.map((card, i) => this.createCarouselCard(card, i, cardsForPage)).join('');
                         
                         const cardWidth = window.innerWidth < 1024 ? 180 : 220;
-                        const baseMobileRadius = window.innerWidth * 0.45;
+                        const baseMobileRadius = window.innerWidth * 0.55;
                         const radius = window.innerWidth < 1024 ? Math.max(baseMobileRadius, cardsForPage.length * 35) : 400;
 
                         leftArrow.style.left = `calc(50% - ${radius / 2}px - ${cardWidth / 4}px)`;
@@ -1732,7 +1789,8 @@
                         updateDetails();
                     };
 
-                    let isDown = false, startX, startRotation, hasMoved;
+                    let isDown = false, startX, startRotation;
+                    handlers.carouselHasMoved = false;
 
                     const spawnSparkles = (sparkleContainer, color = 'white') => {
                         sparkleContainer.innerHTML = '';
@@ -1773,10 +1831,10 @@
                             detailsPanel.querySelector('.price-tag').textContent = '';
                             detailsPanel.querySelector('.original-price-container').innerHTML = '';
                             const mainBtn = detailsPanel.querySelector('.add-to-basket-main-btn');
-                            mainBtn.disabled = true;
-                            mainBtn.textContent = 'Unavailable';
-                            mainBtn.classList.remove('in-basket');
-                            mainBtn.dataset.docId = '';
+                            if(mainBtn) mainBtn.disabled = true;
+                            if(mainBtn) mainBtn.textContent = 'Unavailable';
+                            if(mainBtn) mainBtn.classList.remove('in-basket');
+                            if(mainBtn) mainBtn.dataset.docId = '';
                             return;
                         }
                         const card = cardsForPage[currentIndex];
@@ -1788,16 +1846,18 @@
                         detailsPanel.querySelector('.price-tag').textContent = `€${finalPrice.toFixed(2)}`;
                         detailsPanel.querySelector('.original-price-container').innerHTML = finalPrice < card.price ? `<span class="original-price">€${(card.price || 0).toFixed(2)}</span>` : '';
                         const mainBtn = detailsPanel.querySelector('.add-to-basket-main-btn');
-                        mainBtn.dataset.docId = card.docId;
-                        mainBtn.disabled = card.status !== 'available';
-                        mainBtn.textContent = card.status ? (card.status.charAt(0).toUpperCase() + card.status.slice(1)) : (isInBasket ? 'In Basket' : 'Add to Basket');
-                        mainBtn.classList.toggle('in-basket', isInBasket);
+                        if (mainBtn) {
+                            mainBtn.dataset.docId = card.docId;
+                            mainBtn.disabled = card.status !== 'available';
+                            mainBtn.textContent = card.status ? (card.status.charAt(0).toUpperCase() + card.status.slice(1)) : (isInBasket ? 'In Basket' : 'Add to Basket');
+                            mainBtn.classList.toggle('in-basket', isInBasket);
 
-                        if (isInBasket) {
-                            const groupColor = config.colors[groupName]?.group || '#28a745';
-                            mainBtn.style.backgroundColor = groupColor;
-                        } else {
-                            mainBtn.style.backgroundColor = ''; 
+                            if (isInBasket) {
+                                const groupColor = config.colors[groupName]?.group || '#28a745';
+                                mainBtn.style.backgroundColor = groupColor;
+                            } else {
+                                mainBtn.style.backgroundColor = ''; 
+                            }
                         }
                         
                         const cardElements = carouselEl.querySelectorAll('.carousel-card');
@@ -1837,16 +1897,6 @@
                                 }
                             }
 
-                            if (isActive && cardEl.classList.contains('is-flipped')) {
-                                const innerCard = cardEl.querySelector('.carousel-card-inner');
-                                if (innerCard) {
-                                    innerCard.style.transition = 'none';
-                                    cardEl.classList.remove('is-flipped');
-                                    void innerCard.offsetWidth;
-                                    innerCard.style.transition = '';
-                                }
-                            }
-
                             cardEl.classList.toggle('show-tags', isActive || isNeighbor);
                         });
                     };
@@ -1881,7 +1931,7 @@
 
                     const handleDragStart = (x) => {
                         isDown = true;
-                        hasMoved = false;
+                        handlers.carouselHasMoved = false;
                         carouselEl.classList.add('is-dragging');
                         startX = x;
                         startRotation = rotation;
@@ -1892,7 +1942,7 @@
                         if (e.type === 'touchmove') e.preventDefault();
                         const walk = x - startX;
                         if (Math.abs(walk) > 5) { // Threshold to detect a drag vs a click
-                           hasMoved = true;
+                           handlers.carouselHasMoved = true;
                         }
                         rotation = startRotation + (walk * 0.5);
                         carouselEl.style.transition = 'none'; 
@@ -1908,6 +1958,7 @@
                         carouselEl.style.transition = 'transform 0.5s cubic-bezier(0.23, 1, 0.32, 1)';
                         carouselEl.style.transform = `rotateY(${rotation}deg)`;
                         updateDetails();
+                        setTimeout(() => { handlers.carouselHasMoved = false; }, 50);
                     };
 
                     carouselEl.addEventListener('mousedown', (e) => {
@@ -2059,6 +2110,7 @@
             // --- 7. EVENT HANDLERS ---
             const handlers = {
                 scrollTimeout: null,
+                carouselHasMoved: false,
                 arrowRightSVG: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>`,
                 arrowLeftSVG: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>`,
                 init() {
@@ -2078,6 +2130,25 @@
                     
                     dom.tutorialNextBtn.addEventListener('click', this.handleTutorialNext.bind(this));
                     dom.tutorialCloseBtn.addEventListener('click', this.closeTutorial.bind(this));
+
+                    dom.prevSectionBtn.addEventListener('click', () => this.navigateSection(-1));
+                    dom.nextSectionBtn.addEventListener('click', () => this.navigateSection(1));
+                },
+                navigateSection(direction) {
+                    const targetIndex = state.currentSectionIndex + direction;
+                    if (targetIndex >= 0 && targetIndex < state.allSections.length) {
+                        const targetSection = state.allSections[targetIndex];
+                        clearTimeout(this.scrollTimeout);
+                        dom.userView.style.scrollSnapType = 'none';
+                        targetSection.scrollIntoView({ behavior: 'smooth' });
+                        this.scrollTimeout = setTimeout(() => {
+                            dom.userView.style.scrollSnapType = '';
+                        }, 1000);
+                    }
+                },
+                updateSectionNav() {
+                    dom.prevSectionBtn.disabled = state.currentSectionIndex === 0;
+                    dom.nextSectionBtn.disabled = state.currentSectionIndex === state.allSections.length - 1;
                 },
                 toggleNav() {
                     dom.floatingNavContent.classList.toggle('is-hidden');
