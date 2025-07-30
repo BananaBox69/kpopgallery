@@ -837,27 +837,29 @@ border-radius: 0.25rem; }
     right: 1.5rem;
     z-index: 100;
     display: flex;
-    flex-direction: column; /* Changed to column */
-    align-items: flex-end;   /* Align items to the right */
-    gap: 0.5rem;
-}
-
-#floating-home-btn-container {
-    /* This container just holds the home button */
-}
-
-.nav-cluster {
-    display: flex;
     align-items: flex-start;
     gap: 0.5rem;
 }
 
 #floating-nav-content {
     display: flex;
-    flex-direction: column;
+    flex-direction: column; /* The rows will stack vertically */
     align-items: flex-end;
     gap: 0.5rem;
     transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out;
+}
+
+.nav-row {
+    display: grid; /* Use grid for columns */
+    grid-template-columns: repeat(7, 40px); /* 7 columns of 40px width */
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+/* This is for the empty placeholder cells in the grid */
+.nav-cell.empty {
+    width: 40px;
+    height: 40px;
 }
 #floating-nav-content.is-hidden {
     transform: translateX(calc(100% + 50px));
