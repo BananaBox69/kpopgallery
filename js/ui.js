@@ -142,7 +142,9 @@ export const ui = {
         const totalPages = Math.ceil(filteredCards.length / cardsPerPage);
         const showPagination = filteredCards.length > cardsPerPage;
         section.innerHTML = `
-            <div class="room-backdrop"></div>
+            <div class="room-backdrop">
+                <div class="room-backdrop-wall"></div>
+            </div>
             ${quote ? `<div class="member-quote animate-in" style="transition-delay: 0.3s;">${quote.replace(/\n/g, '<br>')}</div>` : ''}
             <div class="member-section">
                 <div class="card-details-panel">

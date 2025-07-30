@@ -87,18 +87,50 @@ body {
     height: 100%;
     z-index: 0;
     overflow: hidden;
-    perspective: 2000px;
-    /* Give it a deep perspective */
-    perspective-origin: center 60%;
-    /* Lower the perspective origin slightly */
+    perspective: 1200px; /* Adjusted perspective */
+    perspective-origin: center center; /* Centered perspective */
 }
+
+/* This is the new Back Wall */
+.room-backdrop-wall {
+    position: absolute;
+    top: 10%; /* Give some space from top */
+    bottom: 10%; /* and bottom */
+    left: 20%; /* Come in from the sides */
+    right: 20%;
+    background-color: var(--member-color);
+    background-image:
+        /* Darkening overlay */
+        linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.95)),
+        /* Subtle vertical lines */
+        repeating-linear-gradient(
+            90deg,
+            hsla(0, 0%, 100%, 0.0) 0,
+            hsla(0, 0%, 100%, 0.0) 100px,
+            hsla(0, 0%, 100%, 0.02) 100px,
+            hsla(0, 0%, 100%, 0.02) 101px
+        ),
+        /* Subtle ornamental pattern */
+        repeating-radial-gradient(
+            circle at center,
+            hsla(0, 0%, 100%, 0.01) 0,
+            hsla(0, 0%, 100%, 0.01) 1px,
+            transparent 1px,
+            transparent 40px
+    );
+    background-size: cover, auto, 40px 40px;
+    opacity: 0.3;
+    -webkit-mask-image: linear-gradient(to top, transparent, black 20%, black 80%, transparent);
+    mask-image: linear-gradient(to top, transparent, black 20%, black 80%, transparent);
+}
+
 
 .room-backdrop::before,
 .room-backdrop::after {
     content: '';
     position: absolute;
-    top: 0;
-    bottom: 0;
+    top: 10%; /* Match back wall */
+    bottom: 10%;
     width: 50%; /* Each wall takes up half the container */
     background-color: var(--member-color);
     /* Use member color as base */
@@ -134,16 +166,16 @@ body {
 
 /* Left Wall */
 .room-backdrop::before {
-    left: 0;
+    left: -30%; /* Move it left */
     transform-origin: right center;
-    transform: rotateY(55deg);
+    transform: rotateY(75deg); /* Adjust angle */
 }
 
 /* Right Wall */
 .room-backdrop::after {
-    right: 0;
+    right: -30%; /* Move it right */
     transform-origin: left center;
-    transform: rotateY(-55deg);
+    transform: rotateY(-75deg); /* Adjust angle */
 }
 
 
