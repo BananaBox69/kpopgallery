@@ -165,18 +165,17 @@ body {
 
 /* Left Wall */
 .room-backdrop::before {
-    left: -35%; /* Pushed further out for depth */
+    left: -20%; /* Adjusted to connect with back wall */
     transform-origin: right center;
-    transform: rotateY(80deg); /* Increased angle for depth */
+    transform: rotateY(70deg); /* Fine-tuned angle */
 }
 
 /* Right Wall */
 .room-backdrop::after {
-    right: -35%; /* Pushed further out for depth */
+    right: -20%; /* Adjusted to connect with back wall */
     transform-origin: left center;
-    transform: rotateY(-80deg); /* Increased angle for depth */
+    transform: rotateY(-70deg); /* Fine-tuned angle */
 }
-
 
 /* --- Typography and Text Styles --- */
 .hero-title {
