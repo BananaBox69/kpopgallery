@@ -87,7 +87,7 @@ body {
     height: 100%;
     z-index: 0;
     overflow: hidden;
-    perspective: 1200px; /* Adjusted perspective */
+    perspective: 2000px; /* Increased for more depth */
     perspective-origin: center center; /* Centered perspective */
 }
 
@@ -119,7 +119,7 @@ body {
             transparent 40px
     );
     background-size: cover, auto, 40px 40px;
-    opacity: 0.3;
+    opacity: 0.5; /* Increased opacity for brightness */
     -webkit-mask-image: linear-gradient(to top, transparent, black 20%, black 80%, transparent);
     mask-image: linear-gradient(to top, transparent, black 20%, black 80%, transparent);
 }
@@ -131,7 +131,7 @@ body {
     position: absolute;
     top: 10%; /* Match back wall */
     bottom: 10%;
-    width: 50%; /* Each wall takes up half the container */
+    width: 50%;
     background-color: var(--member-color);
     /* Use member color as base */
 
@@ -156,8 +156,7 @@ body {
             transparent 40px
     );
     background-size: cover, auto, 40px 40px;
-    opacity: 0.3;
-    /* <-- ADJUSTED FOR MORE VISIBILITY */
+    opacity: 0.5; /* Increased opacity for brightness */
 
     /* Fade edges to blend into the darkness */
     -webkit-mask-image: linear-gradient(to top, transparent 5%, black 25%, black 75%, transparent 95%);
@@ -166,16 +165,16 @@ body {
 
 /* Left Wall */
 .room-backdrop::before {
-    left: -30%; /* Move it left */
+    left: -35%; /* Pushed further out for depth */
     transform-origin: right center;
-    transform: rotateY(75deg); /* Adjust angle */
+    transform: rotateY(80deg); /* Increased angle for depth */
 }
 
 /* Right Wall */
 .room-backdrop::after {
-    right: -30%; /* Move it right */
+    right: -35%; /* Pushed further out for depth */
     transform-origin: left center;
-    transform: rotateY(-75deg); /* Adjust angle */
+    transform: rotateY(-80deg); /* Increased angle for depth */
 }
 
 
