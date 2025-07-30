@@ -326,34 +326,7 @@ export const ui = {
                         }
                     });
                 },
-        });
-// Create and add the Home button to its new dedicated container
-                    const homeBtnContainer = document.getElementById('floating-home-btn-container');
-                    homeBtnContainer.innerHTML = ''; // Clear it first
-                    const homeBtn = document.createElement('a');
-                    homeBtn.href = '#main-section';
-                    homeBtn.className = 'nav-btn'; // Use the same style
-                    homeBtn.style.backgroundColor = 'var(--default-ui-color)';
-                    homeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`;
-                    homeBtnContainer.appendChild(homeBtn);
-
-
-                    // Build and append each group row in the correct order
-                    (state.metadata.groupOrder || []).forEach(groupName => {
-            const groupData = groupDataMap[groupName];
-            if (groupData && (groupData.memberBtns.length > 0 || groupData.groupBtn)) {
-                const groupRow = document.createElement('div');
-                groupRow.className = 'nav-row';
-                
-                groupData.memberBtns.forEach(btn => groupRow.appendChild(btn));
-                if (groupData.groupBtn) {
-                    groupRow.appendChild(groupData.groupBtn);
-                }
-                
-                dom.floatingNavContent.appendChild(groupRow);
-            }
-        });
-    },
+        
     renderAdminView() {
         dom.adminView.innerHTML = `
             <div class="admin-header">
