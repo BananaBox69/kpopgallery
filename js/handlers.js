@@ -38,11 +38,7 @@ export const handlers = {
         dom.tutorialCloseBtn.addEventListener('click', this.closeTutorial.bind(this));
     },
     toggleNav(btn) {
-        // Find the content to hide/show, it's a sibling of the button's parent cluster
-        const navCluster = btn.closest('.nav-cluster');
-        if (!navCluster) return;
-
-        const content = navCluster.querySelector('#floating-nav-content .nav-cluster > div'); // Adjust selector
+        const content = document.querySelector('#floating-nav-content > .nav-cluster');
         if (!content) return;
 
         content.classList.toggle('is-hidden');
