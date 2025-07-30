@@ -789,24 +789,30 @@
 
         /* --- Responsive Design --- */
         @media (max-width: 1024px) {
-            .member-section { grid-template-columns: 1fr; gap: 2rem; }
-            .card-details-panel { text-align: center; order: 1; }
+            .group-intro { justify-content: start; padding-top: 10vh; }
+            .group-intro .title-container { margin-bottom: auto; }
+            .group-logo {
+                position: relative;
+                left: auto; bottom: auto;
+                transform: none;
+                margin-top: 2rem;
+                margin-bottom: auto;
+            }
+
+            .member-section { grid-template-columns: 1fr; gap: 0; }
+            .card-details-panel { text-align: center; order: 1; margin-bottom: -1rem; }
             .carousel-container { order: 2; }
             .member-quote { display: none; }
             .card-details-panel .member-name { font-size: 2.5rem; }
             .card-details-panel .group-name { font-size: 1.25rem; }
             .carousel-container { height: 380px; margin-top: -2rem; }
             .carousel-arrow { display: none; }
+            .carousel-pagination { top: auto; bottom: 0; }
             .carousel-card {
                 width: var(--mobile-card-width);
                 height: var(--mobile-card-height);
                 margin-left: calc(var(--mobile-card-width) / -2);
                 margin-top: calc(var(--mobile-card-height) / -2);
-            }
-            .group-logo {
-                left: 50%;
-                bottom: 1.5rem;
-                transform: translateX(-50%);
             }
 
             .admin-card-item { grid-template-columns: auto 50px 1fr; grid-template-rows: auto auto; }
@@ -1464,6 +1470,14 @@
                             dom.floatingNavContent.appendChild(groupRow);
                         }
                     });
+
+                    if (window.innerWidth < 1024) {
+                        dom.floatingNavContent.classList.add('is-hidden');
+                        dom.navToggleBtn.innerHTML = handlers.arrowLeftSVG;
+                    } else {
+                        dom.floatingNavContent.classList.remove('is-hidden');
+                        dom.navToggleBtn.innerHTML = handlers.arrowRightSVG;
+                    }
                 },
                 renderAdminView() {
                     dom.adminView.innerHTML = `
@@ -1693,7 +1707,7 @@
                         
                         const cardWidth = window.innerWidth < 1024 ? 180 : 220;
                         const baseMobileRadius = window.innerWidth * 0.45;
-                        const radius = window.innerWidth < 1024 ? Math.max(baseMobileRadius, cardsForPage.length * 25) : 400;
+                        const radius = window.innerWidth < 1024 ? Math.max(baseMobileRadius, cardsForPage.length * 35) : 400;
 
                         leftArrow.style.left = `calc(50% - ${radius / 2}px - ${cardWidth / 4}px)`;
                         rightArrow.style.left = `calc(50% + ${radius / 2}px + ${cardWidth / 4}px)`;
@@ -1718,7 +1732,7 @@
                         updateDetails();
                     };
 
-                    let isDown = false, startX, startRotation;
+                    let isDown = false, startX, startRotation, hasMoved;
 
                     const spawnSparkles = (sparkleContainer, color = 'white') => {
                         sparkleContainer.innerHTML = '';
@@ -1803,7 +1817,7 @@
 
                             const sheenOverlay = cardEl.querySelector('.card-sheen-overlay');
                             if (sheenOverlay) {
-                                sheenOverlay.classList.toggle('is-sheen-active', isActive || isNeighbor);
+                                sheenOverlay.classList.toggle('is-sheen-active', isActive);
                             }
 
                             const sparkleContainer = cardEl.querySelector('.sparkle-container');
@@ -1867,6 +1881,7 @@
 
                     const handleDragStart = (x) => {
                         isDown = true;
+                        hasMoved = false;
                         carouselEl.classList.add('is-dragging');
                         startX = x;
                         startRotation = rotation;
@@ -1874,8 +1889,11 @@
 
                     const handleDragMove = (x, e) => {
                         if (!isDown) return;
-                        if(e.type === 'touchmove') e.preventDefault();
-                        const walk = (x - startX);
+                        if (e.type === 'touchmove') e.preventDefault();
+                        const walk = x - startX;
+                        if (Math.abs(walk) > 5) { // Threshold to detect a drag vs a click
+                           hasMoved = true;
+                        }
                         rotation = startRotation + (walk * 0.5);
                         carouselEl.style.transition = 'none'; 
                         carouselEl.style.transform = `rotateY(${rotation}deg)`;
@@ -1893,12 +1911,10 @@
                     };
 
                     carouselEl.addEventListener('mousedown', (e) => {
-                        if (e.target.closest('.card-flip-overlay, .card-click-overlay, .card-status-overlay-back')) return;
                         handleDragStart(e.clientX);
                     });
 
                     carouselEl.addEventListener('touchstart', (e) => {
-                        if (e.target.closest('.card-flip-overlay, .card-click-overlay, .card-status-overlay-back')) return;
                         handleDragStart(e.touches[0].clientX);
                     }, { passive: false });
 
@@ -2051,7 +2067,6 @@
                     dom.adminView.addEventListener('input', this.handleAdminFormInput.bind(this));
                     dom.floatingNavContainer.addEventListener('click', this.handleNavClick.bind(this));
                     dom.navToggleBtn.addEventListener('click', this.toggleNav.bind(this));
-                    dom.navToggleBtn.innerHTML = this.arrowRightSVG;
                     dom.floatingEmptyBtn.addEventListener('click', () => this.confirmEmptyBasket());
                     
                     dom.filterBubble.addEventListener('click', () => dom.filterSidebar.classList.add('visible'));
@@ -2122,7 +2137,7 @@
                     if(target.closest('#admin-panel-bubble')) this.handleAdminBubbleClick();
                     
                     const cardWrapper = target.closest('.carousel-card');
-                    if (cardWrapper) {
+                    if (cardWrapper && !handlers.carouselHasMoved) {
                         if (target.closest('.card-flip-overlay')) {
                             cardWrapper.classList.toggle('is-flipped');
                         } else if (target.closest('.carousel-card-front .card-click-overlay')) {
